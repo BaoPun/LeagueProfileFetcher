@@ -150,6 +150,14 @@ void SummonerProfile::set_summoner_placeholder_label_text(QString new_text){
     this->summoner_ui->summoner_display->setText(new_text);
 }
 
+void SummonerProfile::set_summoner_solo_rank_label_text(QString new_text){
+    this->summoner_ui->solo_label->setText(new_text);
+}
+
+void SummonerProfile::set_summoner_flex_rank_label_text(QString new_text){
+    this->summoner_ui->flex_label->setText(new_text);
+}
+
 /**
  * @brief This slot is triggered when the submit button is clicked.
  */

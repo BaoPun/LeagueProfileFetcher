@@ -98,6 +98,7 @@ void ApiProcessor::process_multiple_api_data(vector<QString> url_list, int offse
         QNetworkRequest request;
         request.setUrl(url_list[i]);
         this->net_reply = this->net_manager->get(request);
+        cout << url_list[i].toStdString() << endl;
 
         // With an event loop, it forces the current api call to complete before the next one.
         QEventLoop event_loop;
@@ -126,7 +127,7 @@ void ApiProcessor::retrieve_data(int index){
     if(this->net_reply->error() != QNetworkReply::NoError){
         cout << "Error description: " << this->net_reply->errorString().toStdString() << endl;
         if(index == 11)
-            cout << "Main error is that the summoner is currently NOT in a live game" << endl;
+            cout << "Main error is that the summoner is currently NOT in a live game" << endl << endl;
         else
             this->summoner_profile_window.set_summoner_placeholder_label_text("INVALID USER");
 
@@ -176,6 +177,7 @@ void ApiProcessor::retrieve_data(int index){
     else if(index == 7){
         this->summoner_data.process_summoner_data(QJsonDocument::fromJson(this->data_buffer).object());
         this->summoner_profile_window.set_summoner_placeholder_label_text(summoner_data.get_summoner_name());
+        this->data_buffer.clear();
 
         // The summoner data was valid: process the rank, champion mastery, match history, and live game data
         vector<QString> url_list;
@@ -190,6 +192,8 @@ void ApiProcessor::retrieve_data(int index){
     // Set up the summoner rank data
     else if(index == 8){
         this->summoner_data.process_rank_data(QJsonDocument::fromJson(this->data_buffer).array());
+        this->summoner_profile_window.set_summoner_solo_rank_label_text(this->summoner_data.get_solo_queue_rank());
+        this->summoner_profile_window.set_summoner_flex_rank_label_text(this->summoner_data.get_flex_queue_rank());
     }
     // Set up the summoner's champion mastery data
     else if(index == 9){

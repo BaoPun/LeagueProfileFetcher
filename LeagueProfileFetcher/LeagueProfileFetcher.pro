@@ -14,6 +14,7 @@ SOURCES += \
     mainwindow.cpp \
     staticData.cpp \
     summonerData.cpp \
+    summonerRank.cpp \
     summonerwindow.cpp
 
 HEADERS += \
@@ -22,6 +23,7 @@ HEADERS += \
     mainwindow.h \
     staticData.h \
     summonerData.h \
+    summonerRank.h \
     summonerwindow.h
 
 FORMS += \

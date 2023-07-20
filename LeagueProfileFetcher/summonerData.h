@@ -1,20 +1,7 @@
 #ifndef SUMMONERDATA_H
 #define SUMMONERDATA_H
 
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonValue>
-#include <QJsonObject>
-#include <QString>
-
-#include <iostream>
-#include <string>
-#include <vector>
-
-using std::cout;
-using std::endl;
-using std::string;
-using std::vector;
+#include "./summonerRank.h"
 
 class SummonerData{
     private:
@@ -24,6 +11,8 @@ class SummonerData{
         QString platform, region;
         int summoner_level;
         bool is_data_valid;
+        vector<SummonerRank> summoner_rank_data;
+
 
     public:
         SummonerData();
@@ -31,6 +20,9 @@ class SummonerData{
         // Data Processing
         void process_summoner_data(QJsonObject);
         void process_rank_data(QJsonArray);
+
+        QString get_solo_queue_rank();
+        QString get_flex_queue_rank();
 
         // Getters
         QString get_summoner_name();

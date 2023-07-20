@@ -48,6 +48,8 @@ class SummonerProfile : public QMainWindow{
 
         void hide_window();
         void set_summoner_placeholder_label_text(QString);
+        void set_summoner_solo_rank_label_text(QString);
+        void set_summoner_flex_rank_label_text(QString);
 
 };
 

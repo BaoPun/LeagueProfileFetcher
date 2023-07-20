@@ -1,6 +1,6 @@
 #include "./summonerData.h"
 
-SummonerData::SummonerData(){
+SummonerData::SummonerData() : summoner_rank_data(2){
     this->encrypted_summoner_id = "";
     this->summoner_name = "";
     this->summoner_puuid = "";
@@ -23,9 +23,34 @@ void SummonerData::process_summoner_data(QJsonObject json){
     this->set_is_data_valid(true);
 }
 
+/**
+ * @brief Process all the VALID data from the summoner rank api url.
+ * However, if there is nothing, then reset the pre-existing data instead.
+ * @param json - json array to parse through
+ */
 void SummonerData::process_rank_data(QJsonArray json){
-    cout << "Json data content for rank data" << endl;
+    for(int i = 0; i < this->summoner_rank_data.size(); i++)
+        this->summoner_rank_data[i].reset_rank_data();
+    for(int i = 0; i < json.size(); i++)
+        this->summoner_rank_data[i].process_rank_data(json[i].toObject());
 }
+
+QString SummonerData::get_solo_queue_rank(){
+    for(int i = 0; i < this->summoner_rank_data.size(); i++){
+        if(this->summoner_rank_data[i].get_queue_type() == "RANKED_SOLO_5x5")
+            return this->summoner_rank_data[i].get_rank();
+    }
+    return "NO SOLO Q RANK";
+}
+
+QString SummonerData::get_flex_queue_rank(){
+    for(int i = 0; i < this->summoner_rank_data.size(); i++){
+        if(this->summoner_rank_data[i].get_queue_type() == "RANKED_FLEX_SR")
+            return this->summoner_rank_data[i].get_rank();
+    }
+    return "NO FLEX Q RANK";
+}
+
 
 /**
  * @brief Getter to return the summoner's IGN
