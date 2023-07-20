@@ -21,8 +21,12 @@ class SummonerData{
         void process_summoner_data(QJsonObject);
         void process_rank_data(QJsonArray);
 
-        QString get_solo_queue_rank();
-        QString get_flex_queue_rank();
+        // Data reset
+        void reset_all_rank_data();
+
+        // Rank retrieval
+        SummonerRank get_solo_queue_data();
+        SummonerRank get_flex_queue_data();
 
         // Getters
         QString get_summoner_name();

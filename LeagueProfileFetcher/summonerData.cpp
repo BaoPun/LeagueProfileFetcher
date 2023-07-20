@@ -23,32 +23,44 @@ void SummonerData::process_summoner_data(QJsonObject json){
     this->set_is_data_valid(true);
 }
 
+void SummonerData::reset_all_rank_data(){
+    for(int i = 0; i < this->summoner_rank_data.size(); i++)
+        this->summoner_rank_data[i].reset_rank_data();
+}
+
 /**
  * @brief Process all the VALID data from the summoner rank api url.
- * However, if there is nothing, then reset the pre-existing data instead.
+ * First, reset the rank data.
  * @param json - json array to parse through
  */
 void SummonerData::process_rank_data(QJsonArray json){
-    for(int i = 0; i < this->summoner_rank_data.size(); i++)
-        this->summoner_rank_data[i].reset_rank_data();
+    this->reset_all_rank_data();
     for(int i = 0; i < json.size(); i++)
         this->summoner_rank_data[i].process_rank_data(json[i].toObject());
 }
 
-QString SummonerData::get_solo_queue_rank(){
+/**
+ * @brief Find the solo q rank.
+ * @return Return the solo q rank if found.
+ */
+SummonerRank SummonerData::get_solo_queue_data(){
     for(int i = 0; i < this->summoner_rank_data.size(); i++){
         if(this->summoner_rank_data[i].get_queue_type() == "RANKED_SOLO_5x5")
-            return this->summoner_rank_data[i].get_rank();
+            return this->summoner_rank_data[i];
     }
-    return "NO SOLO Q RANK";
+    return SummonerRank();
 }
 
-QString SummonerData::get_flex_queue_rank(){
+/**
+ * @brief Find the flex q rank.
+ * @return Return the flex q rank if found.
+ */
+SummonerRank SummonerData::get_flex_queue_data(){
     for(int i = 0; i < this->summoner_rank_data.size(); i++){
         if(this->summoner_rank_data[i].get_queue_type() == "RANKED_FLEX_SR")
-            return this->summoner_rank_data[i].get_rank();
+            return this->summoner_rank_data[i];
     }
-    return "NO FLEX Q RANK";
+    return SummonerRank();
 }
 
 

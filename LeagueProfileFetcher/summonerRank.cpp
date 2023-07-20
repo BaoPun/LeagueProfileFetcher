@@ -1,11 +1,7 @@
 #include "./summonerRank.h"
 
 SummonerRank::SummonerRank(){
-    this->rank = "";
-    this->leaguePoints = -1;
-    this->wins = -1;
-    this->losses = -1;
-    this->queue_type = "";
+    this->reset_rank_data();
 }
 
 void SummonerRank::process_rank_data(QJsonObject json){
@@ -17,7 +13,7 @@ void SummonerRank::process_rank_data(QJsonObject json){
 }
 
 void SummonerRank::reset_rank_data(){
-    this->rank = "";
+    this->rank = "NO RANKED INFORMATION";
     this->leaguePoints = -1;
     this->wins = -1;
     this->losses = -1;
