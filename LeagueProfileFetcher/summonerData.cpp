@@ -15,7 +15,6 @@ SummonerData::SummonerData() : summoner_rank_data(2){
  * @param json - json object to parse through.
  */
 void SummonerData::process_summoner_data(QJsonObject json){
-    //cout << "Json object contents: " << QJsonDocument(json).toJson(QJsonDocument::Indented).toStdString() << endl;
     this->set_summoner_name(json.value("name").toString());
     this->set_encrypted_summoner_id(json.value("id").toString());
     this->set_summoner_puuid(json.value("puuid").toString());
@@ -35,8 +34,20 @@ void SummonerData::reset_all_rank_data(){
  */
 void SummonerData::process_rank_data(QJsonArray json){
     this->reset_all_rank_data();
-    for(int i = 0; i < json.size(); i++)
-        this->summoner_rank_data[i].process_rank_data(json[i].toObject());
+
+    // DEBUG: print the json data
+    /*QJsonDocument doc;
+    doc.setArray(json);
+    cout << "Json rank data: " << doc.toJson(QJsonDocument::Indented).toStdString() << endl;
+    */
+    // Due to inconsistencies with the ranked data, create another index denoting the actual count of ranked processes
+    int rank_process = 0;
+    for(int i = 0; i < json.size(); i++){
+        if(json[i].toObject()["queueType"].toString().toStdString().find("RANKED") != string::npos){
+            this->summoner_rank_data[rank_process].process_rank_data(json[i].toObject());
+            rank_process++;
+        }
+    }
 }
 
 /**

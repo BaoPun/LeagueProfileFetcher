@@ -3,6 +3,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow){
     this->ui->setupUi(this);
+    this->setFixedSize(this->width(), this->height());
     this->ui->centralwidget->installEventFilter(this);  // install the event filter for the widget
     this->ui->SummonerInput->installEventFilter(this);  // install the event filter for the textbox
 }

@@ -75,7 +75,7 @@ void ApiProcessor::open_secondary_window(){
  * @param url
  */
 void ApiProcessor::process_api_data(QString url, int json_index){
-    cout << "URL to process: " << url.toStdString() << endl;
+    //cout << "URL to process: " << url.toStdString() << endl;
 
     // Set up the url connection and create the signal + trigger
     QNetworkRequest request{
@@ -188,10 +188,10 @@ void ApiProcessor::retrieve_data(int index){
 
         // The summoner data was valid: process the rank, champion mastery, match history, and live game data
         vector<QString> url_list;
-        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/?api_key=" + API_KEY);
-        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/top?count=7&api_key=" + API_KEY);
-        url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/ids?start=0&count=7&api_key=" + API_KEY);
-        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + API_KEY);
+        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/?api_key=" + QString::fromStdString(API_KEY));
+        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/top?count=7&api_key=" + QString::fromStdString(API_KEY));
+        url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/ids?start=0&count=7&api_key=" + QString::fromStdString(API_KEY));
+        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
 
         // Process all of the urls that were added
         this->process_multiple_api_data(url_list, 6);

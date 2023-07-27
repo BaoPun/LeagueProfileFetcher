@@ -3,6 +3,7 @@
 
 SummonerProfile::SummonerProfile(QWidget *parent) : QMainWindow(parent), summoner_ui(new Ui::SummonerProfile){
     this->summoner_ui->setupUi(this);
+    this->setFixedSize(this->width(), this->height());
     this->hide();
 
     this->summoner_ui->centralwidget->installEventFilter(this);
@@ -110,7 +111,7 @@ QString SummonerProfile::generate_summoner_api_url(){
     summoner_api_url.append(".api.riotgames.com/lol/summoner/v4/summoners/by-name/");
     summoner_api_url.append(this->summoner);
     summoner_api_url.append("?api_key=");
-    summoner_api_url.append(API_KEY);
+    summoner_api_url.append(QString::fromStdString(API_KEY));
     return summoner_api_url;
 }
 
