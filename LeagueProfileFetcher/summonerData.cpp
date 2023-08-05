@@ -36,14 +36,14 @@ void SummonerData::process_rank_data(QJsonArray json){
     this->reset_all_rank_data();
 
     // DEBUG: print the json data
-    /*QJsonDocument doc;
+    QJsonDocument doc;
     doc.setArray(json);
     cout << "Json rank data: " << doc.toJson(QJsonDocument::Indented).toStdString() << endl;
-    */
+
     // Due to inconsistencies with the ranked data, create another index denoting the actual count of ranked processes
     int rank_process = 0;
     for(int i = 0; i < json.size(); i++){
-        if(json[i].toObject()["queueType"].toString().toStdString().find("RANKED") != string::npos){
+        if(json[i].toObject()["queueType"].toString().toStdString() == "RANKED_SOLO_5x5" || json[i].toObject()["queueType"].toString().toStdString() == "RANKED_FLEX_SR"){
             this->summoner_rank_data[rank_process].process_rank_data(json[i].toObject());
             rank_process++;
         }

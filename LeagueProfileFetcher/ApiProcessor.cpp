@@ -145,7 +145,6 @@ void ApiProcessor::retrieve_data(int index){
 
     // The data is either static or dynamic.
     // Indexes 1-6 are static
-
     // Set up the version.
     if(index == 1){
         // Grab the latest version (the first index from the json array), set it, and then clear the buffer
@@ -199,8 +198,8 @@ void ApiProcessor::retrieve_data(int index){
     // Set up the summoner rank data
     else if(index == 8){
         this->summoner_data.process_rank_data(QJsonDocument::fromJson(this->data_buffer).array());
-        this->summoner_profile_window.set_summoner_solo_rank_label_text(this->summoner_data.get_solo_queue_data().get_rank());
-        this->summoner_profile_window.set_summoner_flex_rank_label_text(this->summoner_data.get_flex_queue_data().get_rank());
+        this->summoner_profile_window.set_summoner_solo_rank_label_text(this->summoner_data.get_solo_queue_data().get_rank() + "\n" + QString::fromStdString(to_string(this->summoner_data.get_solo_queue_data().get_wins())) + " wins, " + QString::fromStdString(to_string(this->summoner_data.get_solo_queue_data().get_losses())) + " losses\n" + QString::fromStdString(to_string(this->summoner_data.get_solo_queue_data().get_league_points())) + " LP");
+        this->summoner_profile_window.set_summoner_flex_rank_label_text(this->summoner_data.get_flex_queue_data().get_rank() + "\n" + QString::fromStdString(to_string(this->summoner_data.get_flex_queue_data().get_wins())) + " wins, " + QString::fromStdString(to_string(this->summoner_data.get_flex_queue_data().get_losses())) + " losses\n" + QString::fromStdString(to_string(this->summoner_data.get_flex_queue_data().get_league_points())) + " LP");
     }
     // Set up the summoner's champion mastery data
     else if(index == 9){
