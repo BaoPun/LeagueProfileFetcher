@@ -1,2 +1,3 @@
 *ApiKey.h
 build-LeagueProfileFetcher-Desktop_Qt_6_5_1_MSVC2019_64bit-Debug
+*.databaseInfo.h
