@@ -25,6 +25,7 @@ void SummonerData::process_summoner_data(QJsonObject json){
 void SummonerData::reset_all_rank_data(){
     for(int i = 0; i < this->summoner_rank_data.size(); i++)
         this->summoner_rank_data[i].reset_rank_data();
+
 }
 
 /**

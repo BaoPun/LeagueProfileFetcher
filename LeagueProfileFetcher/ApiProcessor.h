@@ -13,6 +13,7 @@
 #include "./summonerwindow.h"
 #include "./summonerData.h"
 #include "./staticData.h"
+#include "./databaseInfo.h"
 
 class ApiProcessor : public QObject{
     private:
@@ -22,6 +23,9 @@ class ApiProcessor : public QObject{
         QNetworkReply *net_reply;
         QByteArray data_buffer;
 
+        // Database
+        PostgresDatabase database;
+
         // Store the windows
         MainWindow main_window;
         SummonerProfile summoner_profile_window;
@@ -29,8 +33,11 @@ class ApiProcessor : public QObject{
         // Store league-related information from the user
         SummonerData summoner_data;
 
+        // Store champion mastery data
+
+
         // Store async'ed data
-        vector<QFutureWatcher<void>> async_api_future_list;
+        //vector<QFutureWatcher<void>> async_api_future_list;
 
         // Store the JSON object
         /*

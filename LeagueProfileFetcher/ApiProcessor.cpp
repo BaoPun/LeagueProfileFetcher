@@ -13,6 +13,12 @@ ApiProcessor::ApiProcessor(QObject *parent){
 
     // Set the flag to be false
     this->has_entered_new_summoner = false;
+
+    // Attempt to open the SQL connection
+    this->database.connect_to_database();
+
+    // Test a few SQL Queries
+    cout << "ID 999 = " << this->database.get_champion_from_id(999).toStdString() << endl;
 }
 
 /**
@@ -188,7 +194,7 @@ void ApiProcessor::retrieve_data(int index){
         // The summoner data was valid: process the rank, champion mastery, match history, and live game data
         vector<QString> url_list;
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/?api_key=" + QString::fromStdString(API_KEY));
-        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/top?count=7&api_key=" + QString::fromStdString(API_KEY));
+        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/ids?start=0&count=7&api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
 

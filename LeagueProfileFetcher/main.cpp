@@ -1,8 +1,9 @@
-#include "ApiProcessor.h"
+#include "./ApiProcessor.h"
 
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
+
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +21,5 @@ int main(int argc, char *argv[])
     */
     ApiProcessor api_processor_application;
     api_processor_application.execute_main_window();
-
     return a.exec();
 }

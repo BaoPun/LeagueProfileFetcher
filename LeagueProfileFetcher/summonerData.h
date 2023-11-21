@@ -2,6 +2,7 @@
 #define SUMMONERDATA_H
 
 #include "./summonerRank.h"
+#include "./summonerMastery.h"
 
 class SummonerData{
     private:
@@ -12,6 +13,7 @@ class SummonerData{
         int summoner_level;
         bool is_data_valid;
         vector<SummonerRank> summoner_rank_data;
+        vector<SummonerMastery> summoner_mastery_data;
 
 
     public:
