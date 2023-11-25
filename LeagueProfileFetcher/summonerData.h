@@ -13,6 +13,8 @@ class SummonerData{
         QString tagline;
         int summoner_level;
         bool is_data_valid;
+
+        // Summoner specific data
         vector<SummonerRank> summoner_rank_data;
         vector<SummonerMastery> summoner_mastery_data;
 

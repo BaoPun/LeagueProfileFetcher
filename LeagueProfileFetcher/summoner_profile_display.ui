@@ -99,7 +99,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>60</y>
+      <y>80</y>
       <width>271</width>
       <height>141</height>
      </rect>
@@ -120,25 +120,12 @@
       <string/>
      </property>
     </widget>
-    <widget class="QLabel" name="solo_placeholder">
-     <property name="geometry">
-      <rect>
-       <x>80</x>
-       <y>10</y>
-       <width>91</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Solo Queue Rank</string>
-     </property>
-    </widget>
    </widget>
    <widget class="QGroupBox" name="flex_group">
     <property name="geometry">
      <rect>
       <x>500</x>
-      <y>60</y>
+      <y>80</y>
       <width>291</width>
       <height>141</height>
      </rect>
@@ -157,19 +144,6 @@
      </property>
      <property name="text">
       <string/>
-     </property>
-    </widget>
-    <widget class="QLabel" name="flex_placeholder">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>10</y>
-       <width>91</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Flex Queue Rank</string>
      </property>
     </widget>
    </widget>
@@ -220,6 +194,32 @@
     </property>
     <property name="placeholderText">
      <string>Enter tagline:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="solo_placeholder">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>60</y>
+      <width>91</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Solo Queue Rank</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="flex_placeholder">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>60</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Flex Queue Rank</string>
     </property>
    </widget>
   </widget>

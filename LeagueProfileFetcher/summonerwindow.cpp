@@ -184,6 +184,9 @@ void SummonerProfile::process_and_clear_form(){
         this->summoner_ui->tagline_input->setText("");
         this->summoner_ui->summoner_input->setFocus();
 
+        // Also restore the dynamic emblems
+        //this->set_summoner_rank_emblems();
+
         msgBox.exec();
         return;
     }
@@ -231,10 +234,7 @@ void SummonerProfile::set_summoner_flex_rank_label_text(QString new_text){
 }
 
 void SummonerProfile::set_summoner_rank_emblems(QString solo_tier, QString flex_tier){
-    if(solo_tier == "")
-        solo_tier = "IRON";
-    if(flex_tier == "")
-        flex_tier = "IRON";
+    // Delete all existing pointers first
     if(this->solo_queue_image != nullptr){
         delete this->solo_queue_image;
         this->solo_queue_image = nullptr;
@@ -243,29 +243,54 @@ void SummonerProfile::set_summoner_rank_emblems(QString solo_tier, QString flex_
         delete this->flex_queue_image;
         this->flex_queue_image = nullptr;
     }
-    // Set up the solo queue emblem
-    this->solo_queue_image = new QLabel();
-    QImage solo_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + solo_tier + ".png");
-    solo_image = solo_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-    this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
-    this->solo_queue_image->setScaledContents(true);
-
-    // Set up the flex queue emblem
-    this->flex_queue_image = new QLabel();
-    QImage flex_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + flex_tier + ".png");
-    flex_image = flex_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-    this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
-    this->flex_queue_image->setScaledContents(true);
+    if(this->summoner_ui->championImageArea->layout() != nullptr){
+        delete this->summoner_ui->championImageArea->layout();
+    }
 
     // Create a brand new horizontal box layout
     QBoxLayout* layout = new QHBoxLayout();
-    layout->addWidget(this->solo_queue_image);
-    layout->addWidget(this->flex_queue_image);
 
+    // Set up the solo queue emblem
+    if(solo_tier != ""){
+        this->solo_queue_image = new QLabel();
+        QImage solo_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + solo_tier + ".png");
+        solo_image = solo_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+        this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
+        this->solo_queue_image->setScaledContents(true);
+        layout->addWidget(this->solo_queue_image);
+    }
+    else{
+        this->solo_queue_image = new QLabel();
+        QImage solo_image("./../LeagueProfileFetcher/ICANT_KEKW.png");
+        solo_image = solo_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+        this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
+        this->solo_queue_image->setScaledContents(true);
+        layout->addWidget(this->solo_queue_image);
+    }
+
+    // Set up the flex queue emblem
+    if(flex_tier != ""){
+        this->flex_queue_image = new QLabel();
+        QImage flex_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + flex_tier + ".png");
+        flex_image = flex_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+        this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
+        this->flex_queue_image->setScaledContents(true);
+        layout->addWidget(this->flex_queue_image);
+    }
+    else{
+        this->flex_queue_image = new QLabel();
+        QImage flex_image("./../LeagueProfileFetcher/ICANT_KEKW.png");
+        flex_image = flex_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+        this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
+        this->flex_queue_image->setScaledContents(true);
+        layout->addWidget(this->flex_queue_image);
+    }
 
     // And assign it to the championImage area.
-    //this->summoner_ui->championImageArea->setWidget(this->solo_queue_image);
-    this->summoner_ui->championImageArea->setLayout(layout);
+    if(layout->count() > 0)
+        this->summoner_ui->championImageArea->setLayout(layout);
+    else
+        delete layout;
 }
 
 

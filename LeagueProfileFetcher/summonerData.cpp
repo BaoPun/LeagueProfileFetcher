@@ -1,6 +1,6 @@
 #include "./summonerData.h"
 
-SummonerData::SummonerData() : summoner_rank_data(2){
+SummonerData::SummonerData() : summoner_rank_data(2), summoner_mastery_data(7){
     this->encrypted_summoner_id = "";
     this->summoner_name = "";
     this->summoner_puuid = "";

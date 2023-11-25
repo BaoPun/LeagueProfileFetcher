@@ -56,7 +56,7 @@ class SummonerProfile : public QMainWindow{
         void set_summoner_placeholder_label_text(QString);
         void set_summoner_solo_rank_label_text(QString);
         void set_summoner_flex_rank_label_text(QString);
-        void set_summoner_rank_emblems(QString, QString);
+        void set_summoner_rank_emblems(QString = "", QString = "");
 
 };
 

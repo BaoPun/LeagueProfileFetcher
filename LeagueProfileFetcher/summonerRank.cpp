@@ -14,8 +14,8 @@ void SummonerRank::process_rank_data(QJsonObject json){
 }
 
 void SummonerRank::reset_rank_data(){
-    this->tier = "NO RANKED INFORMATION";
-    this->rank = "NO RANKED INFORMATION";
+    this->tier = "";
+    this->rank = "";
     this->leaguePoints = -1;
     this->wins = -1;
     this->losses = -1;
