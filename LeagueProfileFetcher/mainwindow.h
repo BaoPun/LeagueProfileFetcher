@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 // Include header files within this project
-#include "./ApiKey.h"
+#include "./CustomException.h"
 
 #include <QMainWindow>
 #include <QVBoxLayout>
@@ -19,9 +19,18 @@ class MainWindow : public QMainWindow{
         Q_OBJECT
         Ui::MainWindow *ui;             // contains content from mainwindow.ui
         QString platform, region;
-        QString summoner;
+        QString summoner, tagline;
+
+        // use to detect whether input was sent from this window
+        // most of the time it will be from secondary window
+        bool is_signal_from_main_window;
+
+        // Getters from the ui
+        QString get_platform_from_ui();
+        QString get_region_from_ui();
 
         // Override
+        bool is_main_window_used = true;
         bool eventFilter(QObject *, QEvent *) override; // Event filtering
 
 
@@ -42,11 +51,10 @@ class MainWindow : public QMainWindow{
         QString get_platform();
         QString get_region();
         QString get_summoner();
+        QString get_tagline();
+        bool get_main_signal();
 
-        // Getters from the ui
-        QString get_platform_from_ui();
-        QString get_region_from_ui();
-        QString generate_summoner_api_url();
+        void trigger_signal();
 
 
 

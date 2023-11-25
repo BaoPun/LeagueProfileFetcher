@@ -8,10 +8,51 @@ SummonerProfile::SummonerProfile(QWidget *parent) : QMainWindow(parent), summone
 
     this->summoner_ui->centralwidget->installEventFilter(this);
     this->summoner_ui->summoner_input->installEventFilter(this);
+    this->summoner_ui->tagline_input->installEventFilter(this);
+
+    // Add items to the dropdown and set North America to be the default value
+    this->summoner_ui->platform_input->addItems(
+        QStringList()
+        << "Brazil"
+        << "North America"
+        << "Latin America1"
+        << "Latin America2"
+        << "Europe Northeast"
+        << "Europe West"
+        << "Turkey"
+        << "Russia"
+        << "Oceania"
+        << "Phillipines"
+        << "Singapore"
+        << "Thailand"
+        << "Taiwan"
+        << "Vietnam"
+        << "Japan"
+        << "Korea"
+        );
+    this->summoner_ui->platform_input->setCurrentIndex(1);
+
+    this->champion_mastery_display = nullptr;
+    this->solo_queue_image = nullptr;
+    this->flex_queue_image = nullptr;
+
+    //this->summoner_ui->championImageArea->setWidget();
 }
 
 SummonerProfile::~SummonerProfile(){
     if(this->summoner_ui != nullptr){
+        if(this->solo_queue_image != nullptr){
+            delete this->solo_queue_image;
+            this->solo_queue_image = nullptr;
+        }
+        if(this->flex_queue_image != nullptr){
+            delete this->flex_queue_image;
+            this->flex_queue_image = nullptr;
+        }
+        if(this->champion_mastery_display != nullptr){
+            delete this->champion_mastery_display;
+            this->champion_mastery_display = nullptr;
+        }
         cout << "Deleting the summoner window (SummonerProfile class)..." << endl;
         delete this->summoner_ui;
         cout << "Deleted the summoner window (SummonerProfile class)" << endl;
@@ -36,10 +77,18 @@ QString SummonerProfile::get_region(){
 
 /**
  * @brief Simple getter to return the summoner
- * @return
+ * @return the summoner name
  */
 QString SummonerProfile::get_summoner(){
     return this->summoner;
+}
+
+/**
+ * @brief Simple getter to return the riot id
+ * @return the tagline (riot id)
+ */
+QString SummonerProfile::get_tagline(){
+    return this->tagline;
 }
 
 /**
@@ -104,47 +153,69 @@ QString SummonerProfile::get_region_from_ui(){
         return "asia";
 }
 
-QString SummonerProfile::generate_summoner_api_url(){
-    QString summoner_api_url;
-    summoner_api_url.append("https://");
-    summoner_api_url.append(this->platform);
-    summoner_api_url.append(".api.riotgames.com/lol/summoner/v4/summoners/by-name/");
-    summoner_api_url.append(this->summoner);
-    summoner_api_url.append("?api_key=");
-    summoner_api_url.append(QString::fromStdString(API_KEY));
-    return summoner_api_url;
-}
 
 void SummonerProfile::execute(){
     // Set focus to the input
     this->summoner_ui->summoner_input->setFocus();
 
-    // Add items to the dropdown and set North America to be the default value
-    this->summoner_ui->platform_input->addItems(
-        QStringList()
-        << "Brazil"
-        << "North America"
-        << "Latin America1"
-        << "Latin America2"
-        << "Europe Northeast"
-        << "Europe West"
-        << "Turkey"
-        << "Russia"
-        << "Oceania"
-        << "Phillipines"
-        << "Singapore"
-        << "Thailand"
-        << "Taiwan"
-        << "Vietnam"
-        << "Japan"
-        << "Korea"
-    );
-    this->summoner_ui->platform_input->setCurrentIndex(1);
-
     // Add a click event to the button when the submit button is clicked.
     connect(this->summoner_ui->submit_button, SIGNAL(clicked()), this, SLOT(process_and_clear_form()));
 
     this->show();
+}
+
+/**
+ * @brief This slot is triggered when the submit button is clicked.
+ */
+void SummonerProfile::process_and_clear_form(){
+    this->platform = this->get_platform_from_ui();
+    this->region = this->get_region_from_ui();
+    this->summoner = this->summoner_ui->summoner_input->toPlainText();
+    this->tagline = this->summoner_ui->tagline_input->toPlainText();
+
+    // IS the summoner name valid?
+    if(this->summoner.length() < 3){
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Error, username is too short");
+        msgBox.setText("Error, the summoner name input is invalid.");
+
+        // Clear the inputs and set focus
+        this->summoner_ui->summoner_input->setText("");
+        this->summoner_ui->tagline_input->setText("");
+        this->summoner_ui->summoner_input->setFocus();
+
+        msgBox.exec();
+        return;
+    }
+
+    // Is the tagline valid? (between 2 and 5 characters)
+    if(this->tagline.isEmpty())
+        this->tagline = this->platform;
+    else if(this->summoner_ui->tagline_input->toPlainText().length() < 2 || this->summoner_ui->tagline_input->toPlainText().length() > 5){
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Error, tagline is not between 2 and 5 characters long.");
+        msgBox.setText("Error, the tagline input is invalid.");
+
+        // Clear the inputs and set focus
+        //this->summoner_ui->summoner_input->setText("");
+        this->summoner_ui->tagline_input->setText("");
+        this->summoner_ui->tagline_input->setFocus();
+
+        msgBox.exec();
+        return;
+    }
+
+
+    // Input has been processed successfully, hide the window
+    this->summoner_ui->summoner_input->setText("");
+    this->summoner_ui->summoner_input->setFocus();
+    this->summoner_ui->tagline_input->setText("");
+    this->hide_window();
+}
+
+void SummonerProfile::hide_window(){
+    this->hide();
+    Q_EMIT this->windowHide();
 }
 
 void SummonerProfile::set_summoner_placeholder_label_text(QString new_text){
@@ -159,37 +230,44 @@ void SummonerProfile::set_summoner_flex_rank_label_text(QString new_text){
     this->summoner_ui->flex_label->setText(new_text);
 }
 
-/**
- * @brief This slot is triggered when the submit button is clicked.
- */
-void SummonerProfile::process_and_clear_form(){
-    this->platform = this->get_platform_from_ui();
-    this->region = this->get_region_from_ui();
-    this->summoner = QString::fromStdString(this->summoner_ui->summoner_input->toPlainText().toStdString());
-
-    if(this->summoner_ui->summoner_input->toPlainText().toStdString().length() < 3){
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Error, username is too short");
-        msgBox.setText("Error, the summoner name input is invalid.");
-
-        // Clear the inputs and set focus
-        this->summoner_ui->summoner_input->setText("");
-        this->summoner_ui->summoner_input->setFocus();
-
-        msgBox.exec();
-        return;
+void SummonerProfile::set_summoner_rank_emblems(QString solo_tier, QString flex_tier){
+    if(solo_tier == "")
+        solo_tier = "IRON";
+    if(flex_tier == "")
+        flex_tier = "IRON";
+    if(this->solo_queue_image != nullptr){
+        delete this->solo_queue_image;
+        this->solo_queue_image = nullptr;
     }
+    if(this->flex_queue_image != nullptr){
+        delete this->flex_queue_image;
+        this->flex_queue_image = nullptr;
+    }
+    // Set up the solo queue emblem
+    this->solo_queue_image = new QLabel();
+    QImage solo_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + solo_tier + ".png");
+    solo_image = solo_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
+    this->solo_queue_image->setScaledContents(true);
 
-    // Input has been processed successfully, hide the window
-    this->summoner_ui->summoner_input->setText("");
-    this->summoner_ui->summoner_input->setFocus();
-    this->hide_window();
+    // Set up the flex queue emblem
+    this->flex_queue_image = new QLabel();
+    QImage flex_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + flex_tier + ".png");
+    flex_image = flex_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+    this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
+    this->flex_queue_image->setScaledContents(true);
+
+    // Create a brand new horizontal box layout
+    QBoxLayout* layout = new QHBoxLayout();
+    layout->addWidget(this->solo_queue_image);
+    layout->addWidget(this->flex_queue_image);
+
+
+    // And assign it to the championImage area.
+    //this->summoner_ui->championImageArea->setWidget(this->solo_queue_image);
+    this->summoner_ui->championImageArea->setLayout(layout);
 }
 
-void SummonerProfile::hide_window(){
-    this->hide();
-    Q_EMIT this->windowHide();
-}
 
 /**
  * @brief Filters through all possible events that are implemented on this function.
@@ -199,11 +277,25 @@ void SummonerProfile::hide_window(){
  * @return true or false - required since this method is being overriden as a virtual declaration from the parent
  */
 bool SummonerProfile::eventFilter(QObject *object, QEvent *event){
-    if((object == this->summoner_ui->summoner_input || object == this->summoner_ui->centralwidget) && event->type() == QEvent::KeyPress){
+    if((object == this->summoner_ui->summoner_input || object == this->summoner_ui->tagline_input || object == this->summoner_ui->centralwidget) && event->type() == QEvent::KeyPress){
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Return){
             this->process_and_clear_form();
             return true;
+        }
+
+        // If the tab was pressed, move to either the summoner input or the tagline input
+        // If the event was the summoner input, then move focus to the tagline input.
+        // If the event was the tagline input, then move focus to the summoner input.
+        if(keyEvent->key() == Qt::Key_Tab){
+            if(object == this->summoner_ui->summoner_input || object == this->summoner_ui->centralwidget){
+                this->summoner_ui->tagline_input->setFocus();
+                return true;
+            }
+            else if(object == this->summoner_ui->tagline_input){
+                this->summoner_ui->summoner_input->setFocus();
+                return true;
+            }
         }
     }
     return false;

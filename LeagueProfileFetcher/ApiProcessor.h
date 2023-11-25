@@ -24,7 +24,7 @@ class ApiProcessor : public QObject{
         QByteArray data_buffer;
 
         // Database
-        PostgresDatabase database;
+        PostgresDatabase* database;
 
         // Store the windows
         MainWindow main_window;
@@ -33,7 +33,6 @@ class ApiProcessor : public QObject{
         // Store league-related information from the user
         SummonerData summoner_data;
 
-        // Store champion mastery data
 
 
         // Store async'ed data

@@ -10,18 +10,21 @@ CONFIG += c++20
 
 SOURCES += \
     ApiProcessor.cpp \
+    CustomException.cpp \
     databaseInfo.cpp \
     main.cpp \
     mainwindow.cpp \
     staticData.cpp \
     summonerChampions.cpp \
     summonerData.cpp \
+    summonerMastery.cpp \
     summonerRank.cpp \
     summonerwindow.cpp
 
 HEADERS += \
     ApiKey.h \
     ApiProcessor.h \
+    CustomException.h \
     databaseInfo.h \
     mainwindow.h \
     staticData.h \
@@ -45,4 +48,97 @@ CONFIG += embed_translations
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    ../../../Ranked Emblems Latest/Rank=Bronze.png \
+    ../../../Ranked Emblems Latest/Rank=Bronze.png \
+    ../../../Ranked Emblems Latest/Rank=Bronze.png \
+    ../../../Ranked Emblems Latest/Rank=Challenger.png \
+    ../../../Ranked Emblems Latest/Rank=Challenger.png \
+    ../../../Ranked Emblems Latest/Rank=Challenger.png \
+    ../../../Ranked Emblems Latest/Rank=Diamond.png \
+    ../../../Ranked Emblems Latest/Rank=Diamond.png \
+    ../../../Ranked Emblems Latest/Rank=Diamond.png \
+    ../../../Ranked Emblems Latest/Rank=Emerald.png \
+    ../../../Ranked Emblems Latest/Rank=Emerald.png \
+    ../../../Ranked Emblems Latest/Rank=Emerald.png \
+    ../../../Ranked Emblems Latest/Rank=Gold.png \
+    ../../../Ranked Emblems Latest/Rank=Gold.png \
+    ../../../Ranked Emblems Latest/Rank=Gold.png \
+    ../../../Ranked Emblems Latest/Rank=Grandmaster.png \
+    ../../../Ranked Emblems Latest/Rank=Grandmaster.png \
+    ../../../Ranked Emblems Latest/Rank=Grandmaster.png \
+    ../../../Ranked Emblems Latest/Rank=Iron.png \
+    ../../../Ranked Emblems Latest/Rank=Iron.png \
+    ../../../Ranked Emblems Latest/Rank=Iron.png \
+    ../../../Ranked Emblems Latest/Rank=Master.png \
+    ../../../Ranked Emblems Latest/Rank=Master.png \
+    ../../../Ranked Emblems Latest/Rank=Master.png \
+    ../../../Ranked Emblems Latest/Rank=Platinum.png \
+    ../../../Ranked Emblems Latest/Rank=Platinum.png \
+    ../../../Ranked Emblems Latest/Rank=Platinum.png \
+    ../../../Ranked Emblems Latest/Rank=Silver.png \
+    ../../../Ranked Emblems Latest/Rank=Silver.png \
+    ../../../Ranked Emblems Latest/Rank=Silver.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Bronze.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Bronze.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Diamond.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Diamond.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Emerald.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Emerald.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Gold.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Gold.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Iron.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Iron.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Platinum.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Platinum.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Silver.png \
+    ../../../Ranked Emblems Latest/Tier Wings/Silver.png \
+    ../../../Ranked Emblems Latest/Wings/Bronze.png \
+    ../../../Ranked Emblems Latest/Wings/Bronze.png \
+    ../../../Ranked Emblems Latest/Wings/Challenger.png \
+    ../../../Ranked Emblems Latest/Wings/Challenger.png \
+    ../../../Ranked Emblems Latest/Wings/Diamond.png \
+    ../../../Ranked Emblems Latest/Wings/Diamond.png \
+    ../../../Ranked Emblems Latest/Wings/Emerald.png \
+    ../../../Ranked Emblems Latest/Wings/Emerald.png \
+    ../../../Ranked Emblems Latest/Wings/Gold.png \
+    ../../../Ranked Emblems Latest/Wings/Gold.png \
+    ../../../Ranked Emblems Latest/Wings/Grand.png \
+    ../../../Ranked Emblems Latest/Wings/Grand.png \
+    ../../../Ranked Emblems Latest/Wings/Iron.png \
+    ../../../Ranked Emblems Latest/Wings/Iron.png \
+    ../../../Ranked Emblems Latest/Wings/Master.png \
+    ../../../Ranked Emblems Latest/Wings/Master.png \
+    ../../../Ranked Emblems Latest/Wings/Platinum.png \
+    ../../../Ranked Emblems Latest/Wings/Platinum.png \
+    ../../../Ranked Emblems Latest/Wings/Silver.png \
+    ../../../Ranked Emblems Latest/Wings/Silver.png \
+    Ranked Emblems Latest/Rank=Bronze.png \
+    Ranked Emblems Latest/Rank=Challenger.png \
+    Ranked Emblems Latest/Rank=Diamond.png \
+    Ranked Emblems Latest/Rank=Emerald.png \
+    Ranked Emblems Latest/Rank=Gold.png \
+    Ranked Emblems Latest/Rank=Grandmaster.png \
+    Ranked Emblems Latest/Rank=Iron.png \
+    Ranked Emblems Latest/Rank=Master.png \
+    Ranked Emblems Latest/Rank=Platinum.png \
+    Ranked Emblems Latest/Rank=Silver.png \
+    Ranked Emblems Latest/Tier Wings/Bronze.png \
+    Ranked Emblems Latest/Tier Wings/Diamond.png \
+    Ranked Emblems Latest/Tier Wings/Emerald.png \
+    Ranked Emblems Latest/Tier Wings/Gold.png \
+    Ranked Emblems Latest/Tier Wings/Iron.png \
+    Ranked Emblems Latest/Tier Wings/Platinum.png \
+    Ranked Emblems Latest/Tier Wings/Silver.png \
+    Ranked Emblems Latest/Wings/Bronze.png \
+    Ranked Emblems Latest/Wings/Challenger.png \
+    Ranked Emblems Latest/Wings/Diamond.png \
+    Ranked Emblems Latest/Wings/Emerald.png \
+    Ranked Emblems Latest/Wings/Gold.png \
+    Ranked Emblems Latest/Wings/Grand.png \
+    Ranked Emblems Latest/Wings/Iron.png \
+    Ranked Emblems Latest/Wings/Master.png \
+    Ranked Emblems Latest/Wings/Platinum.png \
+    Ranked Emblems Latest/Wings/Silver.png
 

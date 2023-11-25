@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
         }
     }
     */
+    cout << QDir::currentPath().toStdString() << endl;
     ApiProcessor api_processor_application;
     api_processor_application.execute_main_window();
     return a.exec();

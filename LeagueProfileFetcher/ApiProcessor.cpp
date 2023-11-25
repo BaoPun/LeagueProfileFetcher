@@ -14,11 +14,12 @@ ApiProcessor::ApiProcessor(QObject *parent){
     // Set the flag to be false
     this->has_entered_new_summoner = false;
 
-    // Attempt to open the SQL connection
-    this->database.connect_to_database();
-
-    // Test a few SQL Queries
-    cout << "ID 999 = " << this->database.get_champion_from_id(999).toStdString() << endl;
+    // Make a connection to the Postgres SQL database
+    this->database = new PostgresDatabase();
+    if(!this->database->is_database_connected()){
+        delete this->database;
+        this->database = nullptr;
+    }
 }
 
 /**
@@ -35,6 +36,10 @@ ApiProcessor::~ApiProcessor(){
         delete this->net_manager;
         cout << "Deleted the network access manager" << endl;
     }
+
+    // Close the database connection, if not already closed
+    if(this->database != nullptr)
+        delete this->database;
 }
 
 /**
@@ -51,28 +56,69 @@ void ApiProcessor::execute_main_window(){
     connect(&this->main_window, SIGNAL(windowClose()), this, SLOT(open_secondary_window()));
 }
 
-
 /**
  * @brief Run the api data and then open the second window
  */
 void ApiProcessor::open_secondary_window(){
-    if(!this->has_entered_new_summoner){
-        this->process_api_data(this->main_window.generate_summoner_api_url(), 7);
+    // If the signal came from the main window, then automatically make the flag true.
+    if(this->main_window.get_main_signal())
         this->has_entered_new_summoner = true;
-        this->summoner_data.set_platform(this->main_window.get_platform());
-        this->summoner_data.set_region(this->main_window.get_region());
+    else
+        this->has_entered_new_summoner = this->summoner_data.get_summoner_name().toLower() != this->summoner_profile_window.get_summoner().toLower()
+                                         || this->summoner_data.get_platform() != this->summoner_profile_window.get_platform()
+                                         || this->summoner_data.get_tagline().toLower() != this->summoner_profile_window.get_tagline().toLower();
+
+    // If new information was entered, then process it and make a new window.
+    // Otherwise, don't make a new window.
+    if(this->has_entered_new_summoner){
+        // Set the summoner name, the region, and the tagline, which is required for the riot id url.
+        if(this->main_window.get_main_signal()){
+            this->summoner_data.set_summoner_name(this->main_window.get_summoner());
+            this->summoner_data.set_region(this->main_window.get_region());
+            if(this->main_window.get_tagline() == "")
+                this->summoner_data.set_tagline(this->summoner_data.get_region());
+            else
+                this->summoner_data.set_tagline(this->main_window.get_tagline());
+
+            // Set the platform as well for good measure
+            this->summoner_data.set_platform(this->main_window.get_platform());
+
+            // Finally, trigger the main signal so that future calls to this signal
+            // will only look at the second window
+            this->main_window.trigger_signal();
+        }
+        else{
+            this->summoner_data.set_summoner_name(this->summoner_profile_window.get_summoner());
+            this->summoner_data.set_region(this->summoner_profile_window.get_region());
+            if(this->summoner_profile_window.get_tagline() == "")
+                this->summoner_data.set_tagline(this->summoner_data.get_region());
+            else
+                this->summoner_data.set_tagline(this->summoner_profile_window.get_tagline());
+
+            // Set the platform as well for good measure
+            this->summoner_data.set_platform(this->summoner_profile_window.get_platform());
+
+        }
+        // After the initial sets,x generate the riot id url and then process the api.
+        this->process_api_data(this->summoner_data.generate_riot_id_url(), 7);
+
+        // Execute the secondary window
+        this->summoner_profile_window.execute();
+
+        // Create a connection to the secondary window when it is hidden; again, open the secondary window
+        // Because this slot is recursively calling the same slot, the 5th argument guarantees a unique connection
+        // So that we can search for different users
+        connect(&this->summoner_profile_window, SIGNAL(windowHide()), this, SLOT(open_secondary_window()), Qt::UniqueConnection);
     }
+    // Otherwise, same information was used. Display message box and retain the secondary window
     else{
-        this->process_api_data(this->summoner_profile_window.generate_summoner_api_url(), 7);
-        this->summoner_data.set_platform(this->summoner_profile_window.get_platform());
-        this->summoner_data.set_region(this->summoner_profile_window.get_region());
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Same information detected.");
+        msgBox.setText("You have entered the same user.  Nothing will change.");
+        msgBox.exec();
+        this->summoner_profile_window.show();
     }
 
-    this->summoner_profile_window.execute();
-
-    // Create a connection to the secondary window when it is hidden; again, open the secondary window
-    // Because this slot is recursively calling the same slot, the 5th argument guarantees a unique connection
-    connect(&this->summoner_profile_window, SIGNAL(windowHide()), this, SLOT(open_secondary_window()), Qt::UniqueConnection);
 }
 
 
@@ -131,7 +177,7 @@ void ApiProcessor::retrieve_data(int index){
     // If there was an error, print the error to the console and immediately escape this function
     if(this->net_reply->error() != QNetworkReply::NoError){
         cout << "Error description: " << this->net_reply->errorString().toStdString() << endl;
-        if(index == 11)
+        if(index == 12)
             cout << "Main error is that the summoner is currently NOT in a live game" << endl << endl;
         else{
             this->summoner_profile_window.set_summoner_placeholder_label_text("INVALID USER");
@@ -140,7 +186,6 @@ void ApiProcessor::retrieve_data(int index){
             this->summoner_data.reset_all_rank_data();
             this->summoner_profile_window.set_summoner_solo_rank_label_text(this->summoner_data.get_solo_queue_data().get_rank());
             this->summoner_profile_window.set_summoner_flex_rank_label_text(this->summoner_data.get_flex_queue_data().get_rank());
-
         }
 
         // At the end of the data processing, clear out the data buffer
@@ -155,8 +200,7 @@ void ApiProcessor::retrieve_data(int index){
     if(index == 1){
         // Grab the latest version (the first index from the json array), set it, and then clear the buffer
         QJsonArray json_array = QJsonDocument::fromJson(this->data_buffer).array();
-        cout << "Latest version: " + json_array[0].toString().toStdString() << endl;
-        this->static_data.set_version(json_array[0].toString().toStdString());
+        this->static_data.set_version(json_array[0].toString().toStdString(), this->database);
         this->data_buffer.clear();
 
         // Add the urls to a locally defined vector
@@ -172,55 +216,82 @@ void ApiProcessor::retrieve_data(int index){
     }
     // Set up the champion data
     else if(index == 2)
-        this->static_data.set_champion_data(QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject());
+        this->static_data.set_champion_data(QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject(), this->database);
     // Set up the summoner spell data
     else if(index == 3)
-        this->static_data.set_summoner_spell_data(QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject());
+        this->static_data.set_summoner_spell_data(QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject(), this->database);
     // Set up the queue data
     else if(index == 4)
-        this->static_data.set_queue_data(QJsonDocument::fromJson(this->data_buffer).array());
+        this->static_data.set_queue_data(QJsonDocument::fromJson(this->data_buffer).array(), this->database);
     // Set up the map data
     else if(index == 5)
-        this->static_data.set_map_data(QJsonDocument::fromJson(this->data_buffer).array());
+        this->static_data.set_map_data(QJsonDocument::fromJson(this->data_buffer).array(), this->database);
     // Set up the item data
     else if(index == 6)
-        this->static_data.set_item_data(QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject());
-    // Set up the summoner api data
+        this->static_data.set_item_data(QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject(), this->database);
+    // Set up the riot id data (puuid, summoner name, tagline)
     else if(index == 7){
-        this->summoner_data.process_summoner_data(QJsonDocument::fromJson(this->data_buffer).object());
-        this->summoner_profile_window.set_summoner_placeholder_label_text(summoner_data.get_summoner_name());
+        this->summoner_data.process_riot_data(QJsonDocument::fromJson(this->data_buffer).object());
         this->data_buffer.clear();
+
+        // Immediately after processing the riot data, process the summoner api url
+        this->process_api_data(this->summoner_data.generate_summoner_api_url(), 8);
+    }
+    // Set up the summoner api data
+    else if(index == 8){
+        this->summoner_data.process_summoner_data(QJsonDocument::fromJson(this->data_buffer).object());
+        this->data_buffer.clear();
+
+        this->summoner_profile_window.set_summoner_placeholder_label_text(this->summoner_data.get_summoner_name() + "#" + this->summoner_data.get_tagline());
 
         // The summoner data was valid: process the rank, champion mastery, match history, and live game data
         vector<QString> url_list;
+        //url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/riot/account/v1/accounts/by-puuid/" + this->summoner_data.get_summoner_puuid() + "?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/ids?start=0&count=7&api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
 
         // Process all of the urls that were added
-        this->process_multiple_api_data(url_list, 6);
+        this->process_multiple_api_data(url_list, 7);
     }
     // Set up the summoner rank data
-    else if(index == 8){
+    else if(index == 9){
         this->summoner_data.process_rank_data(QJsonDocument::fromJson(this->data_buffer).array());
-        this->summoner_profile_window.set_summoner_solo_rank_label_text(this->summoner_data.get_solo_queue_data().get_rank() + "\n" + QString::fromStdString(to_string(this->summoner_data.get_solo_queue_data().get_wins())) + " wins, " + QString::fromStdString(to_string(this->summoner_data.get_solo_queue_data().get_losses())) + " losses\n" + QString::fromStdString(to_string(this->summoner_data.get_solo_queue_data().get_league_points())) + " LP");
-        this->summoner_profile_window.set_summoner_flex_rank_label_text(this->summoner_data.get_flex_queue_data().get_rank() + "\n" + QString::fromStdString(to_string(this->summoner_data.get_flex_queue_data().get_wins())) + " wins, " + QString::fromStdString(to_string(this->summoner_data.get_flex_queue_data().get_losses())) + " losses\n" + QString::fromStdString(to_string(this->summoner_data.get_flex_queue_data().get_league_points())) + " LP");
+        SummonerRank solo_queue_data = this->summoner_data.get_solo_queue_data();
+        SummonerRank flex_queue_data = this->summoner_data.get_flex_queue_data();
+        this->summoner_profile_window.set_summoner_solo_rank_label_text(
+            solo_queue_data.get_tier() + " "
+            + solo_queue_data.get_rank() + "\n"
+            + QString::fromStdString(to_string(solo_queue_data.get_wins())) + " wins, "
+            + QString::fromStdString(to_string(solo_queue_data.get_losses())) + " losses\n"
+            + QString::fromStdString(to_string(solo_queue_data.get_league_points())) + " LP"
+        );
+        this->summoner_profile_window.set_summoner_flex_rank_label_text(
+            flex_queue_data.get_tier() + " "
+            + flex_queue_data.get_rank() + "\n"
+            + QString::fromStdString(to_string(flex_queue_data.get_wins())) + " wins, "
+            + QString::fromStdString(to_string(flex_queue_data.get_losses())) + " losses\n"
+            + QString::fromStdString(to_string(flex_queue_data.get_league_points())) + " LP"
+        );
+
+        // In addition, load the summoner rank image
+        this->summoner_profile_window.set_summoner_rank_emblems(solo_queue_data.get_tier(), flex_queue_data.get_tier());
     }
     // Set up the summoner's champion mastery data
-    else if(index == 9){
+    else if(index == 10){
         cout << "NICE mastery data" << endl;
     }
     // Set up the summoner's match history data
-    else if(index == 10){
+    else if(index == 11){
         cout << "NICE match history data" << endl;
     }
     // Set up the summoner's live game data
-    else if(index == 11){
+    else if(index == 12){
         cout << "NICE live game data" << endl;
     }
     // Set up each summoner's match data
-    else if(index == 12){
+    else if(index == 13){
         cout << "NICE match data" << endl;
     }
 

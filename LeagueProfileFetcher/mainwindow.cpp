@@ -1,11 +1,12 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow){
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), is_signal_from_main_window(true){
     this->ui->setupUi(this);
     this->setFixedSize(this->width(), this->height());
     this->ui->centralwidget->installEventFilter(this);  // install the event filter for the widget
-    this->ui->SummonerInput->installEventFilter(this);  // install the event filter for the textbox
+    this->ui->SummonerInput->installEventFilter(this);  // install the event filter for the summoner textbox
+    this->ui->taglineInput->installEventFilter(this);   // install the event filter for the tagline textbox
 }
 
 MainWindow::~MainWindow(){
@@ -34,10 +35,22 @@ QString MainWindow::get_region(){
 
 /**
  * @brief Simple getter to return the summoner
- * @return
+ * @return the summoner name
  */
 QString MainWindow::get_summoner(){
     return this->summoner;
+}
+
+/**
+ * @brief Simple getter to return the tagline
+ * @return the tagline
+ */
+QString MainWindow::get_tagline(){
+    return this->tagline;
+}
+
+bool MainWindow::get_main_signal(){
+    return this->is_signal_from_main_window;
 }
 
 /**
@@ -143,25 +156,6 @@ void MainWindow::execute(){
     this->show();
 }
 
-
-
-
-
-/**
- * @brief Given the platform and the summoner name input that was captured, generate the GET summoner name api.
- * @return a QString representing the url.
- */
-QString MainWindow::generate_summoner_api_url(){
-    QString summoner_api_url;
-    summoner_api_url.append("https://");
-    summoner_api_url.append(this->platform);
-    summoner_api_url.append(".api.riotgames.com/lol/summoner/v4/summoners/by-name/");
-    summoner_api_url.append(this->ui->SummonerInput->toPlainText());
-    summoner_api_url.append("?api_key=");
-    summoner_api_url.append(API_KEY);
-    return summoner_api_url;
-}
-
 /**
  * Change the text after submitting the button/pressing ENTER on the search bar
  */
@@ -170,16 +164,35 @@ void MainWindow::process_and_clear_form(){
     this->platform = this->get_platform_from_ui();//.toStdString();
     this->region = this->get_region_from_ui();//.toStdString();
     this->summoner = this->ui->SummonerInput->toPlainText();//.toStdString();
+    this->tagline = this->ui->taglineInput->toPlainText();
 
-    // If the input is invalid (less than 3 characters long), then print an error message
-    if(this->summoner.toStdString().length() < 3){
+    // If the summoner input is invalid (less than 3 characters long), then print an error message
+    if(this->summoner.length() < 3){
         QMessageBox msgBox;
         msgBox.setWindowTitle("Error, username is too short");
         msgBox.setText("Error, the summoner name input is invalid.");
 
         // Clear the inputs and set focus
         this->ui->SummonerInput->setText("");
+        this->ui->taglineInput->setText("");
         this->ui->SummonerInput->setFocus();
+
+        msgBox.exec();
+        return;
+    }
+    // If the tagline input is invalid (less than 2 characters and more than 5 characters long), then print an error message
+    // Or if the tagline is empty, then default the tagline to be the same as the platform.
+    if(this->tagline.isEmpty())
+        this->tagline = this->platform;
+    else if(this->tagline.length() < 2 || this->tagline.length() > 5){
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Error, tagline is not between 2 and 5 characters long");
+        msgBox.setText("Error, the tagline input is invalid.");
+
+        // Clear the inputs and set focus
+        //this->ui->SummonerInput->setText("");
+        this->ui->taglineInput->setText("");
+        this->ui->taglineInput->setFocus();
 
         msgBox.exec();
         return;
@@ -197,19 +210,36 @@ void MainWindow::close_window(){
     Q_EMIT this->windowClose();    // once the window is hidden, emit this signal that will be triggered by ApiProcessor
 }
 
+void MainWindow::trigger_signal(){
+    this->is_signal_from_main_window = false;
+}
+
 /**
  * @brief Filters through all possible events that are implemented on this function.
  * Specifically, this will look through the keypress event, and check to see if the "ENTER" key was pressed
- * @param object - the object we are messing with
+ * @pRaram object - the object we are messing with
  * @param event - the event to change the state of the object
  * @return true or false - required since this method is being overriden as a virtual declaration from the parent
  */
 bool MainWindow::eventFilter(QObject *object, QEvent *event){
-    if((object == this->ui->SummonerInput || object == this->ui->centralwidget) && event->type() == QEvent::KeyPress){
+    if((object == this->ui->SummonerInput || object == this->ui->centralwidget || object == this->ui->taglineInput) && event->type() == QEvent::KeyPress){
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Return){
             this->process_and_clear_form();
             return true;
+        }
+        // If the tab was pressed, move onto the next thing.
+        // If the event was the summoner input, then set focus to the tagline input.
+        // If the event was the tagline input, then set focus to the summoner input.
+        if(keyEvent->key() == Qt::Key_Tab){
+            if(object == this->ui->SummonerInput || object == this->ui->centralwidget){
+                this->ui->taglineInput->setFocus();
+                return true;
+            }
+            else if(object == this->ui->taglineInput){
+                this->ui->SummonerInput->setFocus();
+                return true;
+            }
         }
     }
     return false;

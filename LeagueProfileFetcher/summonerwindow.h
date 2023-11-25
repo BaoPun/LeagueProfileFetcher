@@ -1,7 +1,7 @@
 #ifndef SUMMONERWINDOW_H
 #define SUMMONERWINDOW_H
 
-#include "./ApiKey.h"
+#include "./CustomException.h"
 
 #include <QMainWindow>
 #include <QCloseEvent>
@@ -18,11 +18,19 @@ class SummonerProfile : public QMainWindow{
         Ui::SummonerProfile *summoner_ui;
         QString platform, region;
         QString summoner;
+        QString tagline;
 
+        // Dynamic elements
+        QHBoxLayout* champion_mastery_display;
+        QLabel* solo_queue_image;
+        QLabel* flex_queue_image;
+
+        // Getters from the ui
+        QString get_platform_from_ui();
+        QString get_region_from_ui();
 
         // Override
         bool eventFilter(QObject *, QEvent *) override; // Event filtering
-        //void closeEvent(QCloseEvent *) override;
 
     private slots:
         void process_and_clear_form();
@@ -38,18 +46,17 @@ class SummonerProfile : public QMainWindow{
         QString get_platform();
         QString get_region();
         QString get_summoner();
+        QString get_tagline();
 
-        // Getters from the ui
-        QString get_platform_from_ui();
-        QString get_region_from_ui();
-        QString generate_summoner_api_url();
-
+        // Methods to show and hide the window
         void execute();
-
         void hide_window();
+
+        // Directly modifying the contents of the window
         void set_summoner_placeholder_label_text(QString);
         void set_summoner_solo_rank_label_text(QString);
         void set_summoner_flex_rank_label_text(QString);
+        void set_summoner_rank_emblems(QString, QString);
 
 };
 

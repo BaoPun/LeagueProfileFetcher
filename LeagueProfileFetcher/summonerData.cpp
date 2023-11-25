@@ -4,6 +4,7 @@ SummonerData::SummonerData() : summoner_rank_data(2){
     this->encrypted_summoner_id = "";
     this->summoner_name = "";
     this->summoner_puuid = "";
+    this->tagline = "";
     this->summoner_level = -1;
     this->is_data_valid = false;
     this->platform = "";
@@ -11,15 +12,65 @@ SummonerData::SummonerData() : summoner_rank_data(2){
 }
 
 /**
+ * @brief Given the summoner name and the tagline,
+ * generate a URL that will, hopefully, capture the puuid, summoner name, and tagline.
+ * @return The newly added Riot Id API URL.
+ */
+QString SummonerData::generate_riot_id_url(){
+    QString riot_id_url;
+    riot_id_url.append("https://");
+    riot_id_url.append(this->region);
+    riot_id_url.append(".api.riotgames.com/riot/account/v1/accounts/by-riot-id/");
+    riot_id_url.append(this->get_summoner_name());
+    riot_id_url.append("/");
+    riot_id_url.append(this->get_tagline());
+    riot_id_url.append("?api_key=");
+    riot_id_url.append(API_KEY);
+    return riot_id_url;
+}
+
+/**
+ * @brief Generate the summoner api url given the puuid
+ * @return a URL consisting of the summoner api url
+ */
+QString SummonerData::generate_summoner_api_url(){
+    //https://{platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}?api_key={API_KEY}
+    QString summoner_api_url;
+    summoner_api_url.append("https://");
+    summoner_api_url.append(this->platform);
+    summoner_api_url.append(".api.riotgames.com/lol/summoner/v4/summoners/by-puuid/");
+    summoner_api_url.append(this->get_summoner_puuid());
+    summoner_api_url.append("?api_key=");
+    summoner_api_url.append(API_KEY);
+    return summoner_api_url;
+}
+
+/**
+ * @brief Process all the VALID data from the riot id api url.
+ * @param json - json object to parse through.
+ */
+void SummonerData::process_riot_data(QJsonObject json){
+    // New version only has 3 fields: puuid, summoner, tagline
+    this->set_summoner_puuid(json.value("puuid").toString());
+    this->set_summoner_name(json.value("gameName").toString());
+    this->set_tagline(json.value("tagLine").toString());
+}
+
+/**
  * @brief Process all the VALID data from the summoner api url.
  * @param json - json object to parse through.
  */
 void SummonerData::process_summoner_data(QJsonObject json){
-    this->set_summoner_name(json.value("name").toString());
+    if(this->get_summoner_name() == "")
+        this->set_summoner_name(json.value("name").toString());
     this->set_encrypted_summoner_id(json.value("id").toString());
-    this->set_summoner_puuid(json.value("puuid").toString());
     this->set_summoner_level(json.value("summonerLevel").toInt());
-    this->set_is_data_valid(true);
+
+    // Ensure that the puuid from this call and the puuid from riot id api are the same
+    if(this->get_summoner_puuid() == json.value("puuid").toString())
+        this->set_is_data_valid(true);
+    else
+        cout << "WTF IS WRONG" << endl;
 }
 
 void SummonerData::reset_all_rank_data(){
@@ -101,6 +152,14 @@ QString SummonerData::get_summoner_puuid(){
 }
 
 /**
+ * @brief Getter to return the summoner's riot id
+ * @return summoner's riot id
+ */
+QString SummonerData::get_tagline(){
+    return this->tagline;
+}
+
+/**
  * @brief Getter to return the summoner's level
  * @return summoner's level
  */
@@ -154,6 +213,14 @@ void SummonerData::set_encrypted_summoner_id(QString encrypted_summoner_id){
  */
 void SummonerData::set_summoner_puuid(QString summoner_puuid){
     this->summoner_puuid = summoner_puuid;
+}
+
+/**
+ * @brief Setter to change the summoner's riot id
+ * @param riot_id - change the summoner's riot id
+ */
+void SummonerData::set_tagline(QString tagline){
+    this->tagline = tagline;
 }
 
 /**

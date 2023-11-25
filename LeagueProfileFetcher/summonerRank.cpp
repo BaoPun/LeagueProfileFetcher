@@ -5,7 +5,8 @@ SummonerRank::SummonerRank(){
 }
 
 void SummonerRank::process_rank_data(QJsonObject json){
-    this->set_rank(QString::fromStdString(json.value("tier").toString().toStdString() + " " + json.value("rank").toString().toStdString()));
+    this->set_tier(json.value("tier").toString());
+    this->set_rank(json.value("rank").toString());
     this->set_league_points(json.value("leaguePoints").toInt());
     this->set_wins(json.value("wins").toInt());
     this->set_losses(json.value("losses").toInt());
@@ -13,11 +14,16 @@ void SummonerRank::process_rank_data(QJsonObject json){
 }
 
 void SummonerRank::reset_rank_data(){
+    this->tier = "NO RANKED INFORMATION";
     this->rank = "NO RANKED INFORMATION";
     this->leaguePoints = -1;
     this->wins = -1;
     this->losses = -1;
     this->queue_type = "";
+}
+
+QString SummonerRank::get_tier() const{
+    return this->tier;
 }
 
 QString SummonerRank::get_rank() const{
@@ -38,6 +44,10 @@ int SummonerRank::get_losses() const{
 
 QString SummonerRank::get_queue_type() const{
     return this->queue_type;
+}
+
+void SummonerRank::set_tier(const QString &tier){
+    this->tier = tier;
 }
 
 void SummonerRank::set_rank(const QString &rank){

@@ -1,7 +1,7 @@
 #ifndef SUMMONERCHAMPIONS_H
 #define SUMMONERCHAMPIONS_H
 
-#include "./ApiKey.h"
+#include "./CustomException.h"
 
 #include <QMainWindow>
 #include <QCloseEvent>
