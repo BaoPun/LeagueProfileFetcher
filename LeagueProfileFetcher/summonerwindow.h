@@ -3,9 +3,13 @@
 
 #include "./CustomException.h"
 
+#include "./summonerData.h"
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QLayout>
+#include <QLayoutItem>
+
 
 
 QT_BEGIN_NAMESPACE
@@ -28,6 +32,9 @@ class SummonerProfile : public QMainWindow{
         // Getters from the ui
         QString get_platform_from_ui();
         QString get_region_from_ui();
+
+        // Private methods that shouldn't be called publicly
+
 
         // Override
         bool eventFilter(QObject *, QEvent *) override; // Event filtering
@@ -52,11 +59,15 @@ class SummonerProfile : public QMainWindow{
         void execute();
         void hide_window();
 
+        // Auxilary methods
+        void delete_summoner_emblems();
+        void delete_summoner_mastered_champions_images();
+
+
         // Directly modifying the contents of the window
         void set_summoner_placeholder_label_text(QString);
-        void set_summoner_solo_rank_label_text(QString);
-        void set_summoner_flex_rank_label_text(QString);
-        void set_summoner_rank_emblems(QString = "", QString = "");
+        void set_summoner_rank_emblems(SummonerRank, SummonerRank);
+        void set_summoner_champion_mastery_images(vector<QImage>);
 
 };
 

@@ -9,6 +9,7 @@ SummonerProfile::SummonerProfile(QWidget *parent) : QMainWindow(parent), summone
     this->summoner_ui->centralwidget->installEventFilter(this);
     this->summoner_ui->summoner_input->installEventFilter(this);
     this->summoner_ui->tagline_input->installEventFilter(this);
+    this->summoner_ui->centralwidget->setMouseTracking(true);
 
     // Add items to the dropdown and set North America to be the default value
     this->summoner_ui->platform_input->addItems(
@@ -35,8 +36,6 @@ SummonerProfile::SummonerProfile(QWidget *parent) : QMainWindow(parent), summone
     this->champion_mastery_display = nullptr;
     this->solo_queue_image = nullptr;
     this->flex_queue_image = nullptr;
-
-    //this->summoner_ui->championImageArea->setWidget();
 }
 
 SummonerProfile::~SummonerProfile(){
@@ -225,15 +224,11 @@ void SummonerProfile::set_summoner_placeholder_label_text(QString new_text){
     this->summoner_ui->summoner_display->setText(new_text);
 }
 
-void SummonerProfile::set_summoner_solo_rank_label_text(QString new_text){
-    this->summoner_ui->solo_label->setText(new_text);
-}
-
-void SummonerProfile::set_summoner_flex_rank_label_text(QString new_text){
-    this->summoner_ui->flex_label->setText(new_text);
-}
-
-void SummonerProfile::set_summoner_rank_emblems(QString solo_tier, QString flex_tier){
+/**
+ * @brief Delete the rank emblems from the summoner's profile.
+ * A required call every time we search for a new summoner
+ */
+void SummonerProfile::delete_summoner_emblems(){
     // Delete all existing pointers first
     if(this->solo_queue_image != nullptr){
         delete this->solo_queue_image;
@@ -243,56 +238,128 @@ void SummonerProfile::set_summoner_rank_emblems(QString solo_tier, QString flex_
         delete this->flex_queue_image;
         this->flex_queue_image = nullptr;
     }
-    if(this->summoner_ui->championImageArea->layout() != nullptr){
-        delete this->summoner_ui->championImageArea->layout();
+
+    if(this->summoner_ui->solo_group->layout() != nullptr){
+        QLayoutItem* item = nullptr;
+        while(!this->summoner_ui->solo_group->layout()->isEmpty()){
+            item = this->summoner_ui->solo_group->layout()->takeAt(0);
+            delete item->widget();
+            delete item;
+        }
+        delete this->summoner_ui->solo_group->layout();
     }
+    if(this->summoner_ui->flex_group->layout() != nullptr){
+        QLayoutItem* item = nullptr;
+        while(!this->summoner_ui->flex_group->layout()->isEmpty()){
+            item = this->summoner_ui->flex_group->layout()->takeAt(0);
+            delete item->widget();
+            delete item;
+        }
+        delete this->summoner_ui->flex_group->layout();
+    }
+}
+
+/**
+ * @brief Setting and displaying the summoner's rank emblems for both solo and flex queues.
+ * @param solo_tier - a SummonerData object representing the summoner's solo q data
+ * @param flex_tier - a SummonerData object representing the summoner's flex q data
+ */
+void SummonerProfile::set_summoner_rank_emblems(SummonerRank solo_tier, SummonerRank flex_tier){
+    // Delete all existing pointers first
+    this->delete_summoner_emblems();
 
     // Create a brand new horizontal box layout
-    QBoxLayout* layout = new QHBoxLayout();
+    QBoxLayout* solo_layout = new QVBoxLayout();
+    QBoxLayout* flex_layout = new QVBoxLayout();
+
+    // Set up the solo queue data
+    if(solo_tier.get_tier() != ""){
+        QLabel* label = new QLabel();
+        label->setText(
+            solo_tier.get_tier() + " "
+            + solo_tier.get_rank() + "\n"
+            + QString::fromStdString(to_string(solo_tier.get_wins())) + " wins, "
+            + QString::fromStdString(to_string(solo_tier.get_losses())) + " losses\n"
+            + QString::fromStdString(to_string(solo_tier.get_league_points())) + " LP"
+        );
+        solo_layout->addWidget(label);
+    }
 
     // Set up the solo queue emblem
-    if(solo_tier != ""){
-        this->solo_queue_image = new QLabel();
-        QImage solo_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + solo_tier + ".png");
-        solo_image = solo_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-        this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
-        this->solo_queue_image->setScaledContents(true);
-        layout->addWidget(this->solo_queue_image);
-    }
-    else{
-        this->solo_queue_image = new QLabel();
-        QImage solo_image("./../LeagueProfileFetcher/ICANT_KEKW.png");
-        solo_image = solo_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-        this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
-        this->solo_queue_image->setScaledContents(true);
-        layout->addWidget(this->solo_queue_image);
+    this->solo_queue_image = new QLabel();
+    QImage solo_image;
+    if(solo_tier.get_tier() != "")
+        solo_image.load("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + solo_tier.get_tier() + ".png");
+    else
+        solo_image.load("./../LeagueProfileFetcher/ICANT_KEKW.png");
+    solo_image = solo_image.scaled(100, 100, Qt::KeepAspectRatio, Qt::FastTransformation);
+    this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
+    this->solo_queue_image->setScaledContents(true);
+    solo_layout->addWidget(this->solo_queue_image);
+
+
+    // Set up the flex queue data
+    if(flex_tier.get_tier() != ""){
+        QLabel* label = new QLabel();
+        label->setText(
+            flex_tier.get_tier() + " "
+            + flex_tier.get_rank() + "\n"
+            + QString::fromStdString(to_string(flex_tier.get_wins())) + " wins, "
+            + QString::fromStdString(to_string(flex_tier.get_losses())) + " losses\n"
+            + QString::fromStdString(to_string(flex_tier.get_league_points())) + " LP"
+            );
+        flex_layout->addWidget(label);
     }
 
     // Set up the flex queue emblem
-    if(flex_tier != ""){
-        this->flex_queue_image = new QLabel();
-        QImage flex_image("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + flex_tier + ".png");
-        flex_image = flex_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-        this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
-        this->flex_queue_image->setScaledContents(true);
-        layout->addWidget(this->flex_queue_image);
-    }
-    else{
-        this->flex_queue_image = new QLabel();
-        QImage flex_image("./../LeagueProfileFetcher/ICANT_KEKW.png");
-        flex_image = flex_image.scaled(100, 100, Qt::IgnoreAspectRatio, Qt::FastTransformation);
-        this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
-        this->flex_queue_image->setScaledContents(true);
-        layout->addWidget(this->flex_queue_image);
-    }
-
-    // And assign it to the championImage area.
-    if(layout->count() > 0)
-        this->summoner_ui->championImageArea->setLayout(layout);
+    this->flex_queue_image = new QLabel();
+    QImage flex_image;
+    if(flex_tier.get_tier() != "")
+        flex_image.load("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + flex_tier.get_tier() + ".png");
     else
-        delete layout;
+        flex_image.load("./../LeagueProfileFetcher/ICANT_KEKW.png");
+    flex_image = flex_image.scaled(100, 100, Qt::KeepAspectRatio, Qt::FastTransformation);
+    this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
+    this->flex_queue_image->setScaledContents(true);
+    flex_layout->addWidget(this->flex_queue_image);
+
+    // And assign it to the respective solo/flex groups area.
+    this->summoner_ui->solo_group->setLayout(solo_layout);
+    this->summoner_ui->flex_group->setLayout(flex_layout);
 }
 
+void SummonerProfile::delete_summoner_mastered_champions_images(){
+    if(this->summoner_ui->championImageArea->layout() != nullptr){
+        QLayoutItem* item = nullptr;
+        while(!this->summoner_ui->championImageArea->layout()->isEmpty()){
+            item = this->summoner_ui->championImageArea->layout()->takeAt(0);
+            delete item->widget();
+            delete item;
+        }
+        delete this->summoner_ui->championImageArea->layout();
+    }
+}
+
+/**
+ * @brief Setting and displaying the summoner's top 7 (or less) most played champions.
+ */
+void SummonerProfile::set_summoner_champion_mastery_images(vector<QImage> images){
+    // First, delete the old championImageArea layout
+    this->delete_summoner_mastered_champions_images();
+
+    // Create a new layout to store each image
+    QBoxLayout* layout = new QHBoxLayout();
+    for(int i = 0; i < images.size(); i++){
+        // Add a label pointer - which will hold the image itself.
+        // The image is not a widget, but the label is (and the label can contain an image)
+        QLabel* image_label = new QLabel();
+        image_label->setPixmap(QPixmap::fromImage(images[i]));
+        layout->addWidget(image_label);
+    }
+
+    // After adding all labels to the layout, set the new layout
+    this->summoner_ui->championImageArea->setLayout(layout);
+}
 
 /**
  * @brief Filters through all possible events that are implemented on this function.
@@ -302,6 +369,7 @@ void SummonerProfile::set_summoner_rank_emblems(QString solo_tier, QString flex_
  * @return true or false - required since this method is being overriden as a virtual declaration from the parent
  */
 bool SummonerProfile::eventFilter(QObject *object, QEvent *event){
+    // Any key press event
     if((object == this->summoner_ui->summoner_input || object == this->summoner_ui->tagline_input || object == this->summoner_ui->centralwidget) && event->type() == QEvent::KeyPress){
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Return){
@@ -312,7 +380,7 @@ bool SummonerProfile::eventFilter(QObject *object, QEvent *event){
         // If the tab was pressed, move to either the summoner input or the tagline input
         // If the event was the summoner input, then move focus to the tagline input.
         // If the event was the tagline input, then move focus to the summoner input.
-        if(keyEvent->key() == Qt::Key_Tab){
+        else if(keyEvent->key() == Qt::Key_Tab){
             if(object == this->summoner_ui->summoner_input || object == this->summoner_ui->centralwidget){
                 this->summoner_ui->tagline_input->setFocus();
                 return true;
@@ -322,6 +390,14 @@ bool SummonerProfile::eventFilter(QObject *object, QEvent *event){
                 return true;
             }
         }
+
+        // If CTRL and Q were pressed together, quit the program altogether.
+        else if(keyEvent->key() == Qt::Key_Q && (keyEvent->modifiers() & Qt::ControlModifier)){
+            this->close();
+            return true;
+        }
     }
+
+
     return false;
 }

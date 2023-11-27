@@ -17,6 +17,7 @@ ApiProcessor::ApiProcessor(QObject *parent){
     // Make a connection to the Postgres SQL database
     this->database = new PostgresDatabase();
     if(!this->database->is_database_connected()){
+        cout << "FAILED..." << endl;
         delete this->database;
         this->database = nullptr;
     }
@@ -97,9 +98,8 @@ void ApiProcessor::open_secondary_window(){
 
             // Set the platform as well for good measure
             this->summoner_data.set_platform(this->summoner_profile_window.get_platform());
-
         }
-        // After the initial sets,x generate the riot id url and then process the api.
+        // After the initial sets, generate the riot id url and then process the api.
         this->process_api_data(this->summoner_data.generate_riot_id_url(), 7);
 
         // Execute the secondary window
@@ -127,8 +127,6 @@ void ApiProcessor::open_secondary_window(){
  * @param url
  */
 void ApiProcessor::process_api_data(QString url, int json_index){
-    //cout << "URL to process: " << url.toStdString() << endl;
-
     // Set up the url connection and create the signal + trigger
     QNetworkRequest request{
         QUrl(url)
@@ -147,8 +145,9 @@ void ApiProcessor::process_api_data(QString url, int json_index){
  */
 void ApiProcessor::process_multiple_api_data(vector<QString> url_list, int offset){
     for(int i = 0; i < url_list.size(); i++){
-        QNetworkRequest request;
-        request.setUrl(url_list[i]);
+        QNetworkRequest request{
+            QUrl(url_list[i])
+        };
         this->net_reply = this->net_manager->get(request);
 
         // With an event loop, it forces the current api call to complete before the next one.
@@ -160,6 +159,88 @@ void ApiProcessor::process_multiple_api_data(vector<QString> url_list, int offse
     }
 }
 
+/**
+ * @brief Set up multiple images called from the web.
+ * Used for mastery data, where we retrieve a list of images from the database,
+ * and then we use an Event Loop to retrieve each image from the web.
+ * We then pass in the image object to the summoner profile window for display.
+ */
+void ApiProcessor::process_multiple_image_data(){
+    // First, clear the data buffer if not already cleared out.
+    if(!this->data_buffer.isEmpty())
+        this->data_buffer.clear();
+
+    if(this->database != nullptr){
+        // First, get the list of all mastered champions by the searched user
+        vector<int> mastered_champions = this->summoner_data.get_all_mastery_champions();
+
+        // Continue if there is at least 1 result
+        // Otherwise, just delete the previous summoner's list of mastered champions' images.
+        if(!mastered_champions.empty()){
+            // Second, organize the list of champions for use in the database
+            QString values;
+            for(int i = 0; i < mastered_champions.size(); i++){
+                values += ("(" + QString::fromStdString(to_string(i+1)) + ", " + QString::fromStdString(to_string(mastered_champions[i])) + ")");
+                if(i != mastered_champions.size() - 1)
+                    values += ", ";
+            }
+
+            // Third, run the query to get the list of image urls
+            vector<QString> image_urls = this->database->get_champion_image_urls_from_ids(values);
+
+
+            // Fourth, create an event loop to process all images and store them into another vector
+            vector<QImage> images;
+            for(int i = 0; i < image_urls.size(); i++){
+                QNetworkRequest request{
+                    QUrl(image_urls[i])
+                };
+                this->net_reply = this->net_manager->get(request);
+
+                QEventLoop event_loop;
+                connect(this->net_reply, &QNetworkReply::readyRead, this, &ApiProcessor::read_data);
+                connect(this->net_reply, &QNetworkReply::finished, this, [&images, this]{ add_image_from_api(images); });
+                connect(this->net_reply, &QNetworkReply::finished, &event_loop, &QEventLoop::quit);
+                event_loop.exec();
+            }
+
+            // Finally, send the images to the summoner profile
+            this->summoner_profile_window.set_summoner_champion_mastery_images(images);
+        }
+        else
+            this->summoner_profile_window.delete_summoner_mastered_champions_images();
+    }
+    else
+        cout << "No database connection established.  No champion image will be displayed." << endl;
+}
+
+/**
+ * @brief Add the processed image to the vector
+ */
+void ApiProcessor::add_image_from_api(vector<QImage>& image_urls){
+    // First, check if there was an error.
+    //cout << this->data_buffer.toStdString() << endl;
+    if(this->net_reply->error() != QNetworkReply::NoError){
+        cout << "There was something wrong with the image processing..." << endl;
+    }
+    else{
+        // Add the image by loading the image from the data buffer
+        QImage new_image;
+        new_image.loadFromData(this->data_buffer);
+        //qDebug() << new_image.format();
+        if(!new_image.isNull()){
+            new_image = new_image.scaled(75, 75, Qt::KeepAspectRatio, Qt::FastTransformation);
+            image_urls.push_back(new_image);
+        }
+        else
+            cout << "NICE TRY" << endl << endl;
+            //qDebug() << image_reader.error() << ": " << image_reader.errorString().toStdString() << "\n";
+    }
+
+    // At the end of the data processing, clear out the data buffer
+    if(!this->data_buffer.isEmpty())
+        this->data_buffer.clear();
+}
 
 /**
  * @brief Read in the data from the request and append it to the data buffer.
@@ -184,8 +265,8 @@ void ApiProcessor::retrieve_data(int index){
 
             // Reset all data
             this->summoner_data.reset_all_rank_data();
-            this->summoner_profile_window.set_summoner_solo_rank_label_text(this->summoner_data.get_solo_queue_data().get_rank());
-            this->summoner_profile_window.set_summoner_flex_rank_label_text(this->summoner_data.get_flex_queue_data().get_rank());
+            this->summoner_profile_window.delete_summoner_emblems();
+            this->summoner_profile_window.delete_summoner_mastered_champions_images();
         }
 
         // At the end of the data processing, clear out the data buffer
@@ -246,11 +327,11 @@ void ApiProcessor::retrieve_data(int index){
 
         // The summoner data was valid: process the rank, champion mastery, match history, and live game data
         vector<QString> url_list;
-        //url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/riot/account/v1/accounts/by-puuid/" + this->summoner_data.get_summoner_puuid() + "?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/?api_key=" + QString::fromStdString(API_KEY));
-        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
+        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/top?count=7&api_key=" + QString::fromStdString(API_KEY));
+        //url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/ids?start=0&count=7&api_key=" + QString::fromStdString(API_KEY));
-        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
+        //url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
 
         // Process all of the urls that were added
         this->process_multiple_api_data(url_list, 7);
@@ -260,27 +341,15 @@ void ApiProcessor::retrieve_data(int index){
         this->summoner_data.process_rank_data(QJsonDocument::fromJson(this->data_buffer).array());
         SummonerRank solo_queue_data = this->summoner_data.get_solo_queue_data();
         SummonerRank flex_queue_data = this->summoner_data.get_flex_queue_data();
-        this->summoner_profile_window.set_summoner_solo_rank_label_text(
-            solo_queue_data.get_tier() + " "
-            + solo_queue_data.get_rank() + "\n"
-            + QString::fromStdString(to_string(solo_queue_data.get_wins())) + " wins, "
-            + QString::fromStdString(to_string(solo_queue_data.get_losses())) + " losses\n"
-            + QString::fromStdString(to_string(solo_queue_data.get_league_points())) + " LP"
-        );
-        this->summoner_profile_window.set_summoner_flex_rank_label_text(
-            flex_queue_data.get_tier() + " "
-            + flex_queue_data.get_rank() + "\n"
-            + QString::fromStdString(to_string(flex_queue_data.get_wins())) + " wins, "
-            + QString::fromStdString(to_string(flex_queue_data.get_losses())) + " losses\n"
-            + QString::fromStdString(to_string(flex_queue_data.get_league_points())) + " LP"
-        );
 
         // In addition, load the summoner rank image
-        this->summoner_profile_window.set_summoner_rank_emblems(solo_queue_data.get_tier(), flex_queue_data.get_tier());
+        this->summoner_profile_window.set_summoner_rank_emblems(solo_queue_data, flex_queue_data);
     }
     // Set up the summoner's champion mastery data
     else if(index == 10){
         cout << "NICE mastery data" << endl;
+        this->summoner_data.process_mastery_data(QJsonDocument::fromJson(this->data_buffer).array(), this->database, this->static_data);
+        this->process_multiple_image_data();
     }
     // Set up the summoner's match history data
     else if(index == 11){

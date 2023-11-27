@@ -44,7 +44,7 @@ string StaticData::get_summoner_spell_description_by_key(int key){
  */
 void StaticData::set_version(string version, PostgresDatabase* database){
     this->version = version;
-    if(QString::fromStdString(this->version) != database->get_version())
+    if(database != nullptr && QString::fromStdString(this->version) != database->get_version())
         database->update_version(QString::fromStdString(version));
 }
 
@@ -55,7 +55,7 @@ void StaticData::set_version(string version, PostgresDatabase* database){
  */
 void StaticData::set_champion_data(QJsonObject json, PostgresDatabase* database){
     // First, determine if we have to cleanse the database
-    bool champion_data_needs_update = json.keys().length() != database->get_num_champions_database();
+    bool champion_data_needs_update = database != nullptr && json.keys().length() != database->get_num_champions_database();
     if(champion_data_needs_update){
         cout << "Outdated version detected.  Cleansing old champion data from the database..." << endl;
         database->delete_champions();
@@ -91,7 +91,7 @@ void StaticData::set_champion_data(QJsonObject json, PostgresDatabase* database)
  * @param database - database pointer that will handle any queries and transactions
  */
 void StaticData::set_summoner_spell_data(QJsonObject json, PostgresDatabase* database){
-    bool summoner_spell_needs_update = json.keys().length() != database->get_num_summoner_spells_database();
+    bool summoner_spell_needs_update = database != nullptr && json.keys().length() != database->get_num_summoner_spells_database();
     if(summoner_spell_needs_update){
         cout << "Outdated summoner spell data detected.  Cleansing old summoner spell data from the database..." << endl;
         database->delete_summoner_spells();
@@ -141,7 +141,7 @@ void StaticData::set_queue_data(QJsonArray json, PostgresDatabase* database){
         }
     }
 
-    bool queue_needs_update = queue_length != database->get_num_queues_database();
+    bool queue_needs_update = database != nullptr && queue_length != database->get_num_queues_database();
     if(queue_needs_update){
         cout << "Outdated queue data detected.  Clearing queue data from the database..." << endl;
         database->delete_queues();
@@ -162,7 +162,7 @@ void StaticData::set_queue_data(QJsonArray json, PostgresDatabase* database){
  * @param json - simple json array containing the mapId, mapName, and notes
  */
 void StaticData::set_map_data(QJsonArray json, PostgresDatabase* database){
-    bool map_needs_update = json.size() != database->get_num_maps_database();
+    bool map_needs_update = database != nullptr && json.size() != database->get_num_maps_database();
     if(map_needs_update){
         cout << "Outdated map data detected.  Clearing old map data from the database..." << endl;
         database->delete_maps();
@@ -227,7 +227,7 @@ void StaticData::set_item_data(QJsonObject json, PostgresDatabase* database){
             }
         }
     }
-    bool item_needs_update = item_length != database->get_num_items_database();
+    bool item_needs_update = database != nullptr && item_length != database->get_num_items_database();
     if(item_needs_update){
         cout << "Outdated item data detected.  Clearing item data from the database..." << endl;
         database->delete_items();

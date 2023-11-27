@@ -231,7 +231,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event){
         // If the tab was pressed, move onto the next thing.
         // If the event was the summoner input, then set focus to the tagline input.
         // If the event was the tagline input, then set focus to the summoner input.
-        if(keyEvent->key() == Qt::Key_Tab){
+        else if(keyEvent->key() == Qt::Key_Tab){
             if(object == this->ui->SummonerInput || object == this->ui->centralwidget){
                 this->ui->taglineInput->setFocus();
                 return true;
@@ -240,6 +240,12 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event){
                 this->ui->SummonerInput->setFocus();
                 return true;
             }
+        }
+
+        // If CTRL and Q were pressed together, quit the program altogether.
+        else if(keyEvent->key() == Qt::Key_Q && (keyEvent->modifiers() & Qt::ControlModifier)){
+            this->close();
+            return true;
         }
     }
     return false;

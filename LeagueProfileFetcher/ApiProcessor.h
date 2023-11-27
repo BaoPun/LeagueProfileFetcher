@@ -8,6 +8,7 @@
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
+#include <QImageReader>
 
 #include "./mainwindow.h"
 #include "./summonerwindow.h"
@@ -63,6 +64,7 @@ class ApiProcessor : public QObject{
         void read_data();
         void retrieve_data(int);
         void open_secondary_window();
+        void add_image_from_api(vector<QImage>&);
 
     public:
         explicit ApiProcessor(QObject * = nullptr);
@@ -74,6 +76,8 @@ class ApiProcessor : public QObject{
         // Process api data
         void process_api_data(QString, int);
         void process_multiple_api_data(vector<QString>, int = 0);
+        void process_multiple_image_data();
+
 
         // Getters
         QNetworkAccessManager *get_network_access_manager();

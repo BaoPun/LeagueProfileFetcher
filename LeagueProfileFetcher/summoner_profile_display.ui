@@ -101,25 +101,12 @@
       <x>140</x>
       <y>80</y>
       <width>271</width>
-      <height>141</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="title">
      <string/>
     </property>
-    <widget class="QLabel" name="solo_label">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>131</width>
-       <height>91</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
    </widget>
    <widget class="QGroupBox" name="flex_group">
     <property name="geometry">
@@ -127,33 +114,20 @@
       <x>500</x>
       <y>80</y>
       <width>291</width>
-      <height>141</height>
+      <height>171</height>
      </rect>
     </property>
     <property name="title">
      <string/>
     </property>
-    <widget class="QLabel" name="flex_label">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>50</y>
-       <width>131</width>
-       <height>91</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
    </widget>
    <widget class="QScrollArea" name="championImageArea">
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>260</y>
+      <y>340</y>
       <width>651</width>
-      <height>171</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="widgetResizable">
@@ -165,7 +139,7 @@
        <x>0</x>
        <y>0</y>
        <width>649</width>
-       <height>169</height>
+       <height>109</height>
       </rect>
      </property>
     </widget>

@@ -76,7 +76,6 @@ void SummonerData::process_summoner_data(QJsonObject json){
 void SummonerData::reset_all_rank_data(){
     for(int i = 0; i < this->summoner_rank_data.size(); i++)
         this->summoner_rank_data[i].reset_rank_data();
-
 }
 
 /**
@@ -86,19 +85,45 @@ void SummonerData::reset_all_rank_data(){
  */
 void SummonerData::process_rank_data(QJsonArray json){
     this->reset_all_rank_data();
+    this->summoner_rank_data.resize(json.size());
+
 
     // DEBUG: print the json data
-    QJsonDocument doc;
-    doc.setArray(json);
-    cout << "Json rank data: " << doc.toJson(QJsonDocument::Indented).toStdString() << endl;
+    //QJsonDocument doc;
+    //doc.setArray(json);
+    //cout << "Json rank data: " << doc.toJson(QJsonDocument::Indented).toStdString() << endl;
 
     // Due to inconsistencies with the ranked data, create another index denoting the actual count of ranked processes
-    int rank_process = 0;
-    for(int i = 0; i < json.size(); i++){
-        if(json[i].toObject()["queueType"].toString().toStdString() == "RANKED_SOLO_5x5" || json[i].toObject()["queueType"].toString().toStdString() == "RANKED_FLEX_SR"){
-            this->summoner_rank_data[rank_process].process_rank_data(json[i].toObject());
-            rank_process++;
-        }
+    for(int i = 0, r = 0; i < json.size(); i++, r++){
+        if(json[i].toObject()["queueType"].toString().toStdString() == "RANKED_SOLO_5x5" || json[i].toObject()["queueType"].toString().toStdString() == "RANKED_FLEX_SR")
+            this->summoner_rank_data[r].process_rank_data(json[i].toObject());
+    }
+}
+
+/**
+ * @brief Process all the summoner's list of mastered champions.
+ * For this project, only process the first 7
+ * @param json - json array to parse through
+ */
+void SummonerData::process_mastery_data(QJsonArray json, PostgresDatabase* database, StaticData static_data){
+    // DEBUG: print the json data
+    //QJsonDocument doc;
+    //doc.setArray(json);
+    //cout << "Json mastery data: " << doc.toJson(QJsonDocument::Indented).toStdString() << endl;
+
+    for(int i = 0; i < json.size() && i < 7; i++){
+        // Champion id, points, and level are all obtained from json.
+        // Same with the associated summoner puuid.
+        this->summoner_mastery_data[i].set_champion_id(json[i].toObject()["championId"].toInt());
+        this->summoner_mastery_data[i].set_champion_points((json[i].toObject()["championPoints"].toInt()));
+        this->summoner_mastery_data[i].set_champion_level(json[i].toObject()["championLevel"].toInt());
+        this->summoner_mastery_data[i].set_summoner_puuid(json[i].toObject()["puuid"].toString());
+
+        // Either get the name from the database or from the static data
+        if(database != nullptr)
+            this->summoner_mastery_data[i].set_champion_name(database->get_champion_from_id(json[i].toObject()["championId"].toInt()));
+        else
+            this->summoner_mastery_data[i].set_champion_name(QString::fromStdString(static_data.get_champion_name_by_key(json[i].toObject()["championId"].toInt())));
     }
 }
 
@@ -126,6 +151,20 @@ SummonerRank SummonerData::get_flex_queue_data(){
     return SummonerRank();
 }
 
+/**
+ * @brief Retrieve the champion ids of all mastered champions
+ * @return
+ */
+vector<int> SummonerData::get_all_mastery_champions(){
+    vector<int> result;
+    for(int i = 0; i < this->summoner_mastery_data.size(); i++){
+        if(this->summoner_mastery_data[i].get_summoner_puuid() == this->summoner_puuid)
+            result.push_back(this->summoner_mastery_data[i].get_champion_id());
+        else
+            break;
+    }
+    return result;
+}
 
 /**
  * @brief Getter to return the summoner's IGN

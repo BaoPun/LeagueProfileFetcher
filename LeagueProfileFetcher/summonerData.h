@@ -1,8 +1,10 @@
 #ifndef SUMMONERDATA_H
 #define SUMMONERDATA_H
 
+#include "./databaseInfo.h"
 #include "./summonerRank.h"
 #include "./summonerMastery.h"
+#include "./staticData.h"
 
 class SummonerData{
     private:
@@ -29,6 +31,7 @@ class SummonerData{
         void process_riot_data(QJsonObject);
         void process_summoner_data(QJsonObject);
         void process_rank_data(QJsonArray);
+        void process_mastery_data(QJsonArray, PostgresDatabase*, StaticData);
 
         // Data reset
         void reset_all_rank_data();
@@ -46,6 +49,7 @@ class SummonerData{
         bool get_is_data_valid();
         QString get_platform();
         QString get_region();
+        vector<int> get_all_mastery_champions();
 
         // Setters
         void set_summoner_name(QString);
