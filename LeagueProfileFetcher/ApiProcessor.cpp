@@ -330,7 +330,7 @@ void ApiProcessor::retrieve_data(int index){
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/top?count=7&api_key=" + QString::fromStdString(API_KEY));
         //url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/ids?start=0&count=7&api_key=" + QString::fromStdString(API_KEY));
-        //url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
+        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
 
         // Process all of the urls that were added
         this->process_multiple_api_data(url_list, 7);
@@ -346,7 +346,6 @@ void ApiProcessor::retrieve_data(int index){
     }
     // Set up the summoner's champion mastery data
     else if(index == 10){
-        cout << "NICE mastery data" << endl;
         this->summoner_data.process_mastery_data(QJsonDocument::fromJson(this->data_buffer).array(), this->database, this->static_data);
         this->process_multiple_image_data();
     }

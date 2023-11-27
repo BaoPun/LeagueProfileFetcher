@@ -15,7 +15,6 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     staticData.cpp \
-    summonerChampions.cpp \
     summonerData.cpp \
     summonerMastery.cpp \
     summonerRank.cpp \
@@ -28,7 +27,6 @@ HEADERS += \
     databaseInfo.h \
     mainwindow.h \
     staticData.h \
-    summonerChampions.h \
     summonerData.h \
     summonerMastery.h \
     summonerRank.h \
@@ -36,7 +34,6 @@ HEADERS += \
 
 FORMS += \
     mainwindow.ui \
-    summoner_champions_played.ui \
     summoner_profile_display.ui
 
 TRANSLATIONS += \
