@@ -172,7 +172,7 @@ void ApiProcessor::process_multiple_image_data(){
 
     if(this->database != nullptr){
         // First, get the list of all mastered champions by the searched user
-        vector<int> mastered_champions = this->summoner_data.get_all_mastery_champions();
+        vector<SummonerMastery> mastered_champions = this->summoner_data.get_all_mastery_champions();
 
         // Continue if there is at least 1 result
         // Otherwise, just delete the previous summoner's list of mastered champions' images.
@@ -180,7 +180,7 @@ void ApiProcessor::process_multiple_image_data(){
             // Second, organize the list of champions for use in the database
             QString values;
             for(int i = 0; i < mastered_champions.size(); i++){
-                values += ("(" + QString::fromStdString(to_string(i+1)) + ", " + QString::fromStdString(to_string(mastered_champions[i])) + ")");
+                values += ("(" + QString::fromStdString(to_string(i+1)) + ", " + QString::fromStdString(to_string(mastered_champions[i].get_champion_id())) + ")");
                 if(i != mastered_champions.size() - 1)
                     values += ", ";
             }
@@ -205,7 +205,7 @@ void ApiProcessor::process_multiple_image_data(){
             }
 
             // Finally, send the images to the summoner profile
-            this->summoner_profile_window.set_summoner_champion_mastery_images(images);
+            this->summoner_profile_window.set_summoner_champion_mastery_images(images, mastered_champions);
         }
         else
             this->summoner_profile_window.delete_summoner_mastered_champions_images();
@@ -234,7 +234,6 @@ void ApiProcessor::add_image_from_api(vector<QImage>& image_urls){
         }
         else
             cout << "NICE TRY" << endl << endl;
-            //qDebug() << image_reader.error() << ": " << image_reader.errorString().toStdString() << "\n";
     }
 
     // At the end of the data processing, clear out the data buffer

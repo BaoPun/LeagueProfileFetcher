@@ -196,6 +196,19 @@
      <string>Flex Queue Rank</string>
     </property>
    </widget>
+   <widget class="QLabel" name="mastery_champions_label">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>310</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Top Champions</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

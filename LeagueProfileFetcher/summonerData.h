@@ -49,7 +49,7 @@ class SummonerData{
         bool get_is_data_valid();
         QString get_platform();
         QString get_region();
-        vector<int> get_all_mastery_champions();
+        vector<SummonerMastery> get_all_mastery_champions();
 
         // Setters
         void set_summoner_name(QString);

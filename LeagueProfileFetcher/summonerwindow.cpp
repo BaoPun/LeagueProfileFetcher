@@ -288,10 +288,14 @@ void SummonerProfile::set_summoner_rank_emblems(SummonerRank solo_tier, Summoner
     // Set up the solo queue emblem
     this->solo_queue_image = new QLabel();
     QImage solo_image;
-    if(solo_tier.get_tier() != "")
+    if(solo_tier.get_tier() != ""){
         solo_image.load("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + solo_tier.get_tier() + ".png");
-    else
+        this->solo_queue_image->setToolTip(solo_tier.get_tier() + " Border");
+    }
+    else{
         solo_image.load("./../LeagueProfileFetcher/ICANT_KEKW.png");
+        this->solo_queue_image->setToolTip("Non-ranked solo queue player ICANT KEKW");
+    }
     solo_image = solo_image.scaled(100, 100, Qt::KeepAspectRatio, Qt::FastTransformation);
     this->solo_queue_image->setPixmap(QPixmap::fromImage(solo_image));
     this->solo_queue_image->setScaledContents(true);
@@ -314,10 +318,14 @@ void SummonerProfile::set_summoner_rank_emblems(SummonerRank solo_tier, Summoner
     // Set up the flex queue emblem
     this->flex_queue_image = new QLabel();
     QImage flex_image;
-    if(flex_tier.get_tier() != "")
+    if(flex_tier.get_tier() != ""){
         flex_image.load("./../LeagueProfileFetcher/Ranked Emblems Latest/Rank=" + flex_tier.get_tier() + ".png");
-    else
+        this->flex_queue_image->setToolTip(flex_tier.get_tier() + " Border");
+    }
+    else{
         flex_image.load("./../LeagueProfileFetcher/ICANT_KEKW.png");
+        this->flex_queue_image->setToolTip("Non-ranked flex queue player ICANT KEKW");
+    }
     flex_image = flex_image.scaled(100, 100, Qt::KeepAspectRatio, Qt::FastTransformation);
     this->flex_queue_image->setPixmap(QPixmap::fromImage(flex_image));
     this->flex_queue_image->setScaledContents(true);
@@ -328,6 +336,9 @@ void SummonerProfile::set_summoner_rank_emblems(SummonerRank solo_tier, Summoner
     this->summoner_ui->flex_group->setLayout(flex_layout);
 }
 
+/**
+ * @brief Deletes the old layout from the championImageArea
+ */
 void SummonerProfile::delete_summoner_mastered_champions_images(){
     if(this->summoner_ui->championImageArea->layout() != nullptr){
         QLayoutItem* item = nullptr;
@@ -343,7 +354,7 @@ void SummonerProfile::delete_summoner_mastered_champions_images(){
 /**
  * @brief Setting and displaying the summoner's top 7 (or less) most played champions.
  */
-void SummonerProfile::set_summoner_champion_mastery_images(vector<QImage> images){
+void SummonerProfile::set_summoner_champion_mastery_images(vector<QImage> images, vector<SummonerMastery> mastery){
     // First, delete the old championImageArea layout
     this->delete_summoner_mastered_champions_images();
 
@@ -354,6 +365,11 @@ void SummonerProfile::set_summoner_champion_mastery_images(vector<QImage> images
         // The image is not a widget, but the label is (and the label can contain an image)
         QLabel* image_label = new QLabel();
         image_label->setPixmap(QPixmap::fromImage(images[i]));
+        image_label->setToolTip(
+            mastery[i].get_champion_name() + "\nMastery Level "
+            + QString::fromStdString(to_string(mastery[i].get_champion_level())) + "\n"
+            + QString::fromStdString(to_string(mastery[i].get_champion_points())) + " points"
+        );
         layout->addWidget(image_label);
     }
 

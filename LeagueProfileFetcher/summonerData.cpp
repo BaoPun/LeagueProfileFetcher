@@ -155,11 +155,11 @@ SummonerRank SummonerData::get_flex_queue_data(){
  * @brief Retrieve the champion ids of all mastered champions
  * @return
  */
-vector<int> SummonerData::get_all_mastery_champions(){
-    vector<int> result;
+vector<SummonerMastery> SummonerData::get_all_mastery_champions(){
+    vector<SummonerMastery> result;
     for(int i = 0; i < this->summoner_mastery_data.size(); i++){
         if(this->summoner_mastery_data[i].get_summoner_puuid() == this->summoner_puuid)
-            result.push_back(this->summoner_mastery_data[i].get_champion_id());
+            result.push_back(this->summoner_mastery_data[i]);
         else
             break;
     }

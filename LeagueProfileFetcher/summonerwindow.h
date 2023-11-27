@@ -67,7 +67,7 @@ class SummonerProfile : public QMainWindow{
         // Directly modifying the contents of the window
         void set_summoner_placeholder_label_text(QString);
         void set_summoner_rank_emblems(SummonerRank, SummonerRank);
-        void set_summoner_champion_mastery_images(vector<QImage>);
+        void set_summoner_champion_mastery_images(vector<QImage>, vector<SummonerMastery>);
 
 };
 
