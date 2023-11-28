@@ -1,6 +1,6 @@
 #include "./summonerData.h"
 
-SummonerData::SummonerData() : summoner_rank_data(2), summoner_mastery_data(7){
+SummonerData::SummonerData() : summoner_rank_data(2), summoner_mastery_data(10){
     this->encrypted_summoner_id = "";
     this->summoner_name = "";
     this->summoner_puuid = "";
@@ -111,7 +111,7 @@ void SummonerData::process_mastery_data(QJsonArray json, PostgresDatabase* datab
     //doc.setArray(json);
     //cout << "Json mastery data: " << doc.toJson(QJsonDocument::Indented).toStdString() << endl;
 
-    for(int i = 0; i < json.size() && i < 7; i++){
+    for(int i = 0; i < json.size() && i < 10; i++){
         // Champion id, points, and level are all obtained from json.
         // Same with the associated summoner puuid.
         this->summoner_mastery_data[i].set_champion_id(json[i].toObject()["championId"].toInt());

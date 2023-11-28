@@ -109,6 +109,7 @@ void ApiProcessor::open_secondary_window(){
         // Because this slot is recursively calling the same slot, the 5th argument guarantees a unique connection
         // So that we can search for different users
         connect(&this->summoner_profile_window, SIGNAL(windowHide()), this, SLOT(open_secondary_window()), Qt::UniqueConnection);
+        connect(&this->summoner_profile_window, SIGNAL(open_champion_window(QString)), this, SLOT(open_champion_window(QString)));
     }
     // Otherwise, same information was used. Display message box and retain the secondary window
     else{
@@ -229,7 +230,7 @@ void ApiProcessor::add_image_from_api(vector<QImage>& image_urls){
         new_image.loadFromData(this->data_buffer);
         //qDebug() << new_image.format();
         if(!new_image.isNull()){
-            new_image = new_image.scaled(75, 75, Qt::KeepAspectRatio, Qt::FastTransformation);
+            new_image = new_image.scaled(80, 80, Qt::KeepAspectRatio, Qt::FastTransformation);
             image_urls.push_back(new_image);
         }
         else
@@ -239,6 +240,22 @@ void ApiProcessor::add_image_from_api(vector<QImage>& image_urls){
     // At the end of the data processing, clear out the data buffer
     if(!this->data_buffer.isEmpty())
         this->data_buffer.clear();
+}
+
+/**
+ * @brief From open_secondary_window, this is called when a champion is clicked on.
+ * This function will hide the secondary window and show a new window
+ * that will contain the abilities of the champion.
+ * @param champion_name - the name of the champion passed in.
+ */
+void ApiProcessor::open_champion_window(QString champion_name){
+    // Hide the summoner window
+    cout << "From api processor, champion name: " << champion_name.toStdString() << endl;
+    this->summoner_profile_window.hide();
+
+    // And show the champion window
+    this->champion_window.set_champion_name(champion_name);
+    this->champion_window.execute();
 }
 
 /**
@@ -327,7 +344,7 @@ void ApiProcessor::retrieve_data(int index){
         // The summoner data was valid: process the rank, champion mastery, match history, and live game data
         vector<QString> url_list;
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "/?api_key=" + QString::fromStdString(API_KEY));
-        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/top?count=7&api_key=" + QString::fromStdString(API_KEY));
+        url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/top?count=10&api_key=" + QString::fromStdString(API_KEY));
         //url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_region() + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + this->summoner_data.get_summoner_puuid() + "/ids?start=0&count=7&api_key=" + QString::fromStdString(API_KEY));
         url_list.push_back("https://" + this->summoner_data.get_platform() + ".api.riotgames.com/lol/spectator/v4/active-games/by-summoner/" + this->summoner_data.get_encrypted_summoner_id() + "?api_key=" + QString::fromStdString(API_KEY));

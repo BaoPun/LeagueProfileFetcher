@@ -11,6 +11,7 @@ CONFIG += c++20
 SOURCES += \
     ApiProcessor.cpp \
     CustomException.cpp \
+    championWindow.cpp \
     databaseInfo.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -24,6 +25,7 @@ HEADERS += \
     ApiKey.h \
     ApiProcessor.h \
     CustomException.h \
+    championWindow.h \
     databaseInfo.h \
     mainwindow.h \
     staticData.h \
@@ -33,6 +35,7 @@ HEADERS += \
     summonerwindow.h
 
 FORMS += \
+    champion_description.ui \
     mainwindow.ui \
     summoner_profile_display.ui
 

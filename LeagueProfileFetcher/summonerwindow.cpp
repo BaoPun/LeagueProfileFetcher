@@ -183,9 +183,6 @@ void SummonerProfile::process_and_clear_form(){
         this->summoner_ui->tagline_input->setText("");
         this->summoner_ui->summoner_input->setFocus();
 
-        // Also restore the dynamic emblems
-        //this->set_summoner_rank_emblems();
-
         msgBox.exec();
         return;
     }
@@ -365,16 +362,27 @@ void SummonerProfile::set_summoner_champion_mastery_images(vector<QImage> images
         // The image is not a widget, but the label is (and the label can contain an image)
         QLabel* image_label = new QLabel();
         image_label->setPixmap(QPixmap::fromImage(images[i]));
+        image_label->setScaledContents(true);
         image_label->setToolTip(
             mastery[i].get_champion_name() + "\nMastery Level "
             + QString::fromStdString(to_string(mastery[i].get_champion_level())) + "\n"
             + QString::fromStdString(to_string(mastery[i].get_champion_points())) + " points"
         );
+        image_label->setObjectName(mastery[i].get_champion_name());
+        image_label->installEventFilter(this);
         layout->addWidget(image_label);
     }
 
     // After adding all labels to the layout, set the new layout
     this->summoner_ui->championImageArea->setLayout(layout);
+}
+
+/**
+ * @brief Emit a signal back to the ApiProcessor by passing in the champion that was clicked.
+ * @param champion - name of the champion
+ */
+void SummonerProfile::send_champion_to_processor(QString champion){
+    Q_EMIT open_champion_window(champion);
 }
 
 /**
@@ -412,6 +420,12 @@ bool SummonerProfile::eventFilter(QObject *object, QEvent *event){
             this->close();
             return true;
         }
+    }
+
+    // Mouse click event on any of the QLabels
+    else if(object->isWidgetType() && object->inherits("QLabel") && event->type() == QEvent::MouseButtonPress){
+        this->send_champion_to_processor(object->objectName());
+        return false;
     }
 
 

@@ -12,6 +12,7 @@
 
 #include "./mainwindow.h"
 #include "./summonerwindow.h"
+#include "./championWindow.h"
 #include "./summonerData.h"
 #include "./staticData.h"
 #include "./databaseInfo.h"
@@ -30,6 +31,8 @@ class ApiProcessor : public QObject{
         // Store the windows
         MainWindow main_window;
         SummonerProfile summoner_profile_window;
+        ChampionWindow champion_window;
+
 
         // Store league-related information from the user
         SummonerData summoner_data;
@@ -65,6 +68,7 @@ class ApiProcessor : public QObject{
         void retrieve_data(int);
         void open_secondary_window();
         void add_image_from_api(vector<QImage>&);
+        void open_champion_window(QString);
 
     public:
         explicit ApiProcessor(QObject * = nullptr);
