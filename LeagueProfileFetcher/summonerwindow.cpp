@@ -382,7 +382,7 @@ void SummonerProfile::set_summoner_champion_mastery_images(vector<QImage> images
  * @param champion - name of the champion
  */
 void SummonerProfile::send_champion_to_processor(QString champion){
-    Q_EMIT open_champion_window(champion);
+    Q_EMIT open_champion_window_signal(champion);
 }
 
 /**
@@ -393,8 +393,14 @@ void SummonerProfile::send_champion_to_processor(QString champion){
  * @return true or false - required since this method is being overriden as a virtual declaration from the parent
  */
 bool SummonerProfile::eventFilter(QObject *object, QEvent *event){
+    // Mouse click event on any of the QLabels
+    if(object->isWidgetType() && object->inherits("QLabel") && event->type() == QEvent::MouseButtonPress){
+        this->send_champion_to_processor(object->objectName());
+        return true;
+    }
+
     // Any key press event
-    if((object == this->summoner_ui->summoner_input || object == this->summoner_ui->tagline_input || object == this->summoner_ui->centralwidget) && event->type() == QEvent::KeyPress){
+    else if((object == this->summoner_ui->summoner_input || object == this->summoner_ui->tagline_input || object == this->summoner_ui->centralwidget) && event->type() == QEvent::KeyPress){
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Return){
             this->process_and_clear_form();
@@ -420,12 +426,6 @@ bool SummonerProfile::eventFilter(QObject *object, QEvent *event){
             this->close();
             return true;
         }
-    }
-
-    // Mouse click event on any of the QLabels
-    else if(object->isWidgetType() && object->inherits("QLabel") && event->type() == QEvent::MouseButtonPress){
-        this->send_champion_to_processor(object->objectName());
-        return false;
     }
 
 

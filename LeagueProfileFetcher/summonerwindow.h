@@ -46,7 +46,7 @@ class SummonerProfile : public QMainWindow{
 
     signals:
         void windowHide();
-        void open_champion_window(QString);
+        void open_champion_window_signal(QString);
 
     public:
         SummonerProfile(QWidget *parent = nullptr);

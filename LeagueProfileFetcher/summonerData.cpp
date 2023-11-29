@@ -102,7 +102,7 @@ void SummonerData::process_rank_data(QJsonArray json){
 
 /**
  * @brief Process all the summoner's list of mastered champions.
- * For this project, only process the first 7
+ * For this project, only process the first 10
  * @param json - json array to parse through
  */
 void SummonerData::process_mastery_data(QJsonArray json, PostgresDatabase* database, StaticData static_data){
@@ -123,7 +123,7 @@ void SummonerData::process_mastery_data(QJsonArray json, PostgresDatabase* datab
         if(database != nullptr)
             this->summoner_mastery_data[i].set_champion_name(database->get_champion_from_id(json[i].toObject()["championId"].toInt()));
         else
-            this->summoner_mastery_data[i].set_champion_name(QString::fromStdString(static_data.get_champion_name_by_key(json[i].toObject()["championId"].toInt())));
+            this->summoner_mastery_data[i].set_champion_name(static_data.get_champion_name_by_key(json[i].toObject()["championId"].toInt()));
     }
 }
 

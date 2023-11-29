@@ -1,23 +1,14 @@
 #ifndef STATICDATA_H
 #define STATICDATA_H
 
-#include "./databaseInfo.h"
+#include "./Champion.h"
 
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QJsonValue>
-
-#include <vector>
-#include <map>
-
-using std::vector;
-using std::map;
 
 class StaticData{
     private:
         string version;
-        map<int, map<string, string>> champion_data;
+        //map<int, map<string, string>> champion_data;
+        map<int, Champion> champion_data;
         map<int, map<string, string>> summoner_spell_data;
         map<int, map<string, string>> queue_data;
         map<int, map<string, string>> map_data;
@@ -28,8 +19,9 @@ class StaticData{
 
         // Getters
         string get_version();
-        string get_champion_name_by_key(int);
-        string get_champion_url_by_key(int);
+        QString get_champion_name_by_key(int);
+        QString get_champion_image_url_by_key(int);
+        QString get_champion_spell_url_by_key(int);
         string get_summoner_spell_name_by_key(int);
         string get_summoner_spell_description_by_key(int);
 

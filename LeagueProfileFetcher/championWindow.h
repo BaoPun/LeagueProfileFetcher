@@ -19,17 +19,28 @@ private:
     Q_OBJECT
     Ui::ChampionWindow* champion_description_ui;
     QString champion_name;
+    bool is_signaled = false;
 
     // Override
     bool eventFilter(QObject *, QEvent *) override; // Event filtering
+
+private slots:
+    void go_back_to_summoner_window();
+
+signals:
+    void show_summoner_window_signal();
 
 public:
     ChampionWindow(QWidget* parent = nullptr, QString = "");
     ~ChampionWindow();
 
-    // Getter and accessor for the champion name
+    // Getter and accessors
+    bool is_signal_triggered();
     QString get_champion_name();
     void set_champion_name(QString);
+
+    // Auxilary functions
+    void acknowledged_signal();
 
     // Show the window
     void execute();

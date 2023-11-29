@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>987</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,14 +17,30 @@
    <widget class="QLabel" name="champion_name_label">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>30</y>
-      <width>151</width>
-      <height>21</height>
+      <x>430</x>
+      <y>40</y>
+      <width>131</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="back_to_summoner_button">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>560</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Click to go back to the Summoner Window.</string>
+    </property>
+    <property name="text">
+     <string>Go Back To Summoner</string>
     </property>
    </widget>
   </widget>
@@ -33,7 +49,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>987</width>
      <height>20</height>
     </rect>
    </property>

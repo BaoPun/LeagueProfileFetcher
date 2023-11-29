@@ -10,6 +10,7 @@ CONFIG += c++20
 
 SOURCES += \
     ApiProcessor.cpp \
+    Champion.cpp \
     CustomException.cpp \
     championWindow.cpp \
     databaseInfo.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
 HEADERS += \
     ApiKey.h \
     ApiProcessor.h \
+    Champion.h \
     CustomException.h \
     championWindow.h \
     databaseInfo.h \

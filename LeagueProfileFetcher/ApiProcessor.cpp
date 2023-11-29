@@ -61,6 +61,12 @@ void ApiProcessor::execute_main_window(){
  * @brief Run the api data and then open the second window
  */
 void ApiProcessor::open_secondary_window(){
+    // If the signal came from the champion window, then show the summoner window and ACK the signal.
+    if(this->champion_window.is_signal_triggered()){
+        this->champion_window.acknowledged_signal();
+        this->summoner_profile_window.execute();
+        return;
+    }
     // If the signal came from the main window, then automatically make the flag true.
     if(this->main_window.get_main_signal())
         this->has_entered_new_summoner = true;
@@ -109,7 +115,7 @@ void ApiProcessor::open_secondary_window(){
         // Because this slot is recursively calling the same slot, the 5th argument guarantees a unique connection
         // So that we can search for different users
         connect(&this->summoner_profile_window, SIGNAL(windowHide()), this, SLOT(open_secondary_window()), Qt::UniqueConnection);
-        connect(&this->summoner_profile_window, SIGNAL(open_champion_window(QString)), this, SLOT(open_champion_window(QString)));
+        connect(&this->summoner_profile_window, SIGNAL(open_champion_window_signal(QString)), this, SLOT(open_champion_window(QString)), Qt::UniqueConnection);
     }
     // Otherwise, same information was used. Display message box and retain the secondary window
     else{
@@ -120,6 +126,26 @@ void ApiProcessor::open_secondary_window(){
         this->summoner_profile_window.show();
     }
 
+}
+
+/**
+ * @brief From open_secondary_window, this is called when a champion is clicked on.
+ * This function will hide the secondary window and show a new window
+ * that will contain the abilities of the champion.
+ * @param champion_name - the name of the champion passed in.
+ */
+void ApiProcessor::open_champion_window(QString champion_name){
+    // Hide the summoner window
+    this->summoner_profile_window.hide();
+
+    // Process the champion specific info (already done as static data)
+    this->champion_window.set_champion_name(champion_name);
+
+    // And show the champion window
+    this->champion_window.execute();
+
+    // Also run a connection from champion window to here to redisplay the summoner window.
+    connect(&this->champion_window, SIGNAL(show_summoner_window_signal()), this, SLOT(open_secondary_window()), Qt::UniqueConnection);
 }
 
 
@@ -228,7 +254,6 @@ void ApiProcessor::add_image_from_api(vector<QImage>& image_urls){
         // Add the image by loading the image from the data buffer
         QImage new_image;
         new_image.loadFromData(this->data_buffer);
-        //qDebug() << new_image.format();
         if(!new_image.isNull()){
             new_image = new_image.scaled(80, 80, Qt::KeepAspectRatio, Qt::FastTransformation);
             image_urls.push_back(new_image);
@@ -240,22 +265,6 @@ void ApiProcessor::add_image_from_api(vector<QImage>& image_urls){
     // At the end of the data processing, clear out the data buffer
     if(!this->data_buffer.isEmpty())
         this->data_buffer.clear();
-}
-
-/**
- * @brief From open_secondary_window, this is called when a champion is clicked on.
- * This function will hide the secondary window and show a new window
- * that will contain the abilities of the champion.
- * @param champion_name - the name of the champion passed in.
- */
-void ApiProcessor::open_champion_window(QString champion_name){
-    // Hide the summoner window
-    cout << "From api processor, champion name: " << champion_name.toStdString() << endl;
-    this->summoner_profile_window.hide();
-
-    // And show the champion window
-    this->champion_window.set_champion_name(champion_name);
-    this->champion_window.execute();
 }
 
 /**

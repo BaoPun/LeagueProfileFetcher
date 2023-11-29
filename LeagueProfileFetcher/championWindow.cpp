@@ -3,6 +3,8 @@
 
 ChampionWindow::ChampionWindow(QWidget* parent, QString champion_name) : QMainWindow(parent), champion_description_ui(new Ui::ChampionWindow){
     this->champion_description_ui->setupUi(this);
+    this->setFixedSize(this->width(), this->height());
+
     this->champion_name = champion_name;
     this->hide();
 
@@ -43,10 +45,41 @@ void ChampionWindow::execute(){
         this->close();
         return;
     }
+
+    // Set focus on the widget
+    cout << "Champion entered: " << this->champion_name.toStdString() << endl;
+    this->champion_description_ui->centralwidget->setFocus();
+
+    // Also add a connection when the button is clicked
+    connect(this->champion_description_ui->back_to_summoner_button, SIGNAL(clicked()), this, SLOT(go_back_to_summoner_window()));
+
+    // Finally, show the window
     this->show();
 }
 
+/**
+ * @brief Return the boolean value of "is_signaled" for use in the api processor
+ * @return True or false, depending on the value of is_signaled.
+ */
+bool ChampionWindow::is_signal_triggered(){
+    return this->is_signaled;
+}
 
+/**
+ * @brief Once the api processor sees this signal, acknowledge it back to this class and disable the signal.
+ */
+void ChampionWindow::acknowledged_signal(){
+    this->is_signaled = false;
+}
+
+/**
+ * @brief Hide this window and then go back to the summoner window.  To go back, emit a signal.
+ */
+void ChampionWindow::go_back_to_summoner_window(){
+    this->hide();
+    this->is_signaled = true;
+    Q_EMIT show_summoner_window_signal();
+}
 
 /**
  * @brief Filters through all possible events that are implemented on this function.

@@ -13,21 +13,30 @@ string StaticData::get_version(){
 }
 
 /**
- * @brief Getter to retrieve the champion's name given the numerical key
+ * @brief Getter to retrieve the champion's name given the key
  * @param the numerical key
  * @return the champion name from the champion_data mapping.
  */
-string StaticData::get_champion_name_by_key(int key){
-    return this->champion_data[key]["championName"];
+QString StaticData::get_champion_name_by_key(int key){
+    return this->champion_data[key].get_name();
 }
 
 /**
- * @brief Getter to retrieve the champion's immage url given the numerical key
+ * @brief Getter to retrieve the champion's immage url given the key
  * @param the numerical key
  * @return the champion's image url from the champion_data mapping.
  */
-string StaticData::get_champion_url_by_key(int key){
-    return this->champion_data[key]["championImage"];
+QString StaticData::get_champion_image_url_by_key(int key){
+    return this->champion_data[key].get_image_url();
+}
+
+/**
+ * @brief Getter to retrieve the champion's spell url given the key
+ * @param the numerical key
+ * @return the champion's spell url from the champion_data mapping
+ */
+QString StaticData::get_champion_spell_url_by_key(int key){
+    return this->champion_data[key].get_spell_url();
 }
 
 string StaticData::get_summoner_spell_name_by_key(int key){
@@ -65,17 +74,24 @@ void StaticData::set_champion_data(QJsonObject json, PostgresDatabase* database)
     foreach(QString key, json.keys()){
         // For some reason, RIOT uses Wukong's name as MonkeyKing in their API.
         // Properly change the Wukong, but the URL for the image MUST remain as MonkeyKing
-        if(key.toStdString() == "MonkeyKing")
-            this->champion_data[json[key].toObject()["key"].toString().toInt()]["championName"] = "Wukong";
+        if(key == "MonkeyKing")
+            this->champion_data[json[key].toObject()["id"].toInt()].set_name("Wukong");//["championName"] = "Wukong";
         else
-            this->champion_data[json[key].toObject()["key"].toString().toInt()]["championName"] = key.toStdString();
-        this->champion_data[json[key].toObject()["key"].toString().toInt()]["championImage"] = "http://ddragon.leagueoflegends.com/cdn/" + this->version + "/img/champion/" + key.toStdString() + ".png";
+            this->champion_data[json[key].toObject()["id"].toInt()].set_name(key);//["championName"] = "Wukong";// = key.toStdString();
+
+        // Add the id, image_url & spell_url, title, lore, and resource type
+        this->champion_data[json[key].toObject()["id"].toInt()].set_id(json[key].toObject()["id"].toInt());
+        this->champion_data[json[key].toObject()["id"].toInt()].set_image_url(QString::fromStdString("http://ddragon.leagueoflegends.com/cdn/" + this->version + "/img/champion/" + key.toStdString() + ".png"));
+        this->champion_data[json[key].toObject()["id"].toInt()].set_spell_url(QString::fromStdString("https://ddragon.leagueoflegends.com/cdn/" + this->version + "/data/en_US/champion/" + key.toStdString() + ".json"));
+        this->champion_data[json[key].toObject()["id"].toInt()].set_title(json[key].toObject()["title"].toString());
+        this->champion_data[json[key].toObject()["id"].toInt()].set_lore(json[key].toObject()["blurb"].toString());
+        this->champion_data[json[key].toObject()["id"].toInt()].set_resource_type(json[key].toObject()["partype"].toString());
 
         if(champion_data_needs_update){
             values += QString("(%1, '%2', '%3'),")
-                          .arg(json[key].toObject()["key"].toString().toInt())
-                          .arg(QString::fromStdString(this->champion_data[json[key].toObject()["key"].toString().toInt()]["championName"]),
-                                QString::fromStdString(this->champion_data[json[key].toObject()["key"].toString().toInt()]["championImage"]));
+                          .arg(this->champion_data[json[key].toObject()["id"].toInt()].get_id())
+                          .arg(this->champion_data[json[key].toObject()["id"].toInt()].get_name(),
+                               this->champion_data[json[key].toObject()["id"].toInt()].get_image_url());
         }
     }
     if(champion_data_needs_update){
