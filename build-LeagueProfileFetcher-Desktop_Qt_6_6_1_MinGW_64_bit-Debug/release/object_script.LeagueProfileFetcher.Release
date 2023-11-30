@@ -1,0 +1,16 @@
+release/ApiProcessor.o
+release/Champion.o
+release/CustomException.o
+release/championWindow.o
+release/databaseInfo.o
+release/main.o
+release/mainwindow.o
+release/staticData.o
+release/summonerData.o
+release/summonerMastery.o
+release/summonerRank.o
+release/summonerwindow.o
+release/moc_ApiProcessor.o
+release/moc_championWindow.o
+release/moc_mainwindow.o
+release/moc_summonerwindow.o
