@@ -89,14 +89,15 @@ void ChampionWindow::go_back_to_summoner_window(){
  * @brief Delete the previous list of skins from the previous champion.
  */
 void ChampionWindow::delete_champion_skins_images(){
-    if(this->champion_description_ui->skins_list->layout() != nullptr){
-        QLayoutItem* item = nullptr;
+    if(this->champion_description_ui->skins_list->widget() != nullptr){
+        delete this->champion_description_ui->skins_list->widget();
+        /*QLayoutItem* item = nullptr;
         while(!this->champion_description_ui->skins_list->layout()->isEmpty()){
             item = this->champion_description_ui->skins_list->layout()->takeAt(0);
             delete item->widget();
             delete item;
         }
-        delete this->champion_description_ui->skins_list->layout();
+        delete this->champion_description_ui->skins_list->layout();*/
     }
 }
 
@@ -139,9 +140,13 @@ void ChampionWindow::process_champion_skins_images(vector<QImage> skins, vector<
     // Set layout properties
     layout->setSpacing(5);
 
+    // Create a new widget
+    QWidget* widget = new QWidget();
+    widget->setLayout(layout);
+
     // Finally, set the new layout on the skins area
-    this->champion_description_ui->skins_list->setLayout(layout);
-    this->champion_description_ui->skins_list->setWidgetResizable(false);
+    this->champion_description_ui->skins_list->setWidget(widget);
+    //this->champion_description_ui->skins_list->setWidgetResizable(false);
 }
 
 /**
@@ -188,7 +193,8 @@ bool ChampionWindow::eventFilter(QObject *object, QEvent *event){
 
     // Mouse click on any of the abilities
     else if(object->isWidgetType() && object->inherits("QLabel") && event->type() == QEvent::MouseButtonPress){
-        this->champion_description_ui->ability_description->setPlaceholderText(object->objectName());
+        this->champion_description_ui->ability_description->setText(object->objectName());
+        //this->champion_description_ui->ability_description->setHorizontalScrollBar(new QScrollBar());
         return true;
     }
 
