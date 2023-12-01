@@ -39,6 +39,15 @@ QString StaticData::get_champion_spell_url_by_key(int key){
     return this->champion_data[key].get_spell_url();
 }
 
+/**
+ * @brief Getter to retrieve the champion's resource given the key
+ * @param the numerical key
+ * @return the champion's resource type from the champion_data mapping
+ */
+QString StaticData::get_champion_resource_name_by_key(int key){
+    return this->champion_data[key].get_resource_type();
+}
+
 string StaticData::get_summoner_spell_name_by_key(int key){
     return this->summoner_spell_data[key]["summonerSpellName"];
 }

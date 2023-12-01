@@ -21,6 +21,7 @@ class StaticData{
         QString get_champion_name_by_key(int);
         QString get_champion_image_url_by_key(int);
         QString get_champion_spell_url_by_key(int);
+        QString get_champion_resource_name_by_key(int);
         string get_summoner_spell_name_by_key(int);
         string get_summoner_spell_description_by_key(int);
 

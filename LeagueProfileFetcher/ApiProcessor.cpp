@@ -109,14 +109,14 @@ void ApiProcessor::open_secondary_window(){
         // After the initial sets, generate the riot id url and then process the api.
         this->process_api_data(this->summoner_data.generate_riot_id_url(), 7);
 
-        // Execute the secondary window
-        this->summoner_profile_window.execute();
-
         // Create a connection to the secondary window when it is hidden; again, open the secondary window
         // Because this slot is recursively calling the same slot, the 5th argument guarantees a unique connection
         // So that we can search for different users
         connect(&this->summoner_profile_window, SIGNAL(windowHide()), this, SLOT(open_secondary_window()), Qt::UniqueConnection);
         connect(&this->summoner_profile_window, SIGNAL(open_champion_window_signal(int)), this, SLOT(open_champion_window(int)), Qt::UniqueConnection);
+
+        // Execute the secondary window
+        this->summoner_profile_window.execute();
     }
     // Otherwise, same information was used. Display message box and retain the secondary window
     else{
@@ -126,7 +126,6 @@ void ApiProcessor::open_secondary_window(){
         msgBox.exec();
         this->summoner_profile_window.show();
     }
-
 }
 
 /**
@@ -404,22 +403,29 @@ void ApiProcessor::retrieve_data(int index){
         QJsonArray spells = QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject()[this->champion_window.get_champion_name()].toObject()["spells"].toArray();
 
         // After extracting the jsons, clear the data buffer
+        int key = QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject()[this->champion_window.get_champion_name()].toObject()["key"].toString().toInt();
         this->data_buffer.clear();
 
-        // Store the list of skins and spells (both url and image)
-        vector<QString> skins_url_list, spells_url_list;
+        // Store the list of skins and spells images
+        vector<QString> skin_names_list, ability_description_list;
         vector<QImage> skins_image_list, spells_image_list;
 
         // Process the skins first
         for(qsizetype i = 1; i < skins.size(); i++){
+            QString skin_url;
+
+            // Wukong is different from the others, so change the url accordingly.
             if(this->champion_window.get_champion_name() != "Wukong")
-                skins_url_list.push_back("https://ddragon.leagueoflegends.com/cdn/img/champion/loading/" + this->champion_window.get_champion_name() + "_" + QString::fromStdString(to_string(skins[i].toObject()["num"].toInt())) + ".jpg");
+                skin_url = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/" + this->champion_window.get_champion_name() + "_" + QString::fromStdString(to_string(skins[i].toObject()["num"].toInt())) + ".jpg";
             else
-                skins_url_list.push_back("https://ddragon.leagueoflegends.com/cdn/img/champion/loading/MonkeyKing_" + QString::fromStdString(to_string(skins[i].toObject()["num"].toInt())) + ".jpg");
+                skin_url = "https://ddragon.leagueoflegends.com/cdn/img/champion/loading/MonkeyKing_" + QString::fromStdString(to_string(skins[i].toObject()["num"].toInt())) + ".jpg";
+
+            // Also record the name of the skin
+            skin_names_list.push_back(skins[i].toObject()["name"].toString());
 
             // Perform a network request using the newly added url
             QNetworkRequest request{
-                QUrl(skins_url_list[i - 1])
+                QUrl(skin_url)
             };
             this->net_reply = this->net_manager->get(request);
 
@@ -429,12 +435,16 @@ void ApiProcessor::retrieve_data(int index){
             connect(this->net_reply, &QNetworkReply::finished, &event_loop, &QEventLoop::quit);
             event_loop.exec();
         }
-        this->champion_window.process_champion_skins_images(skins_image_list);
+        this->champion_window.process_champion_skins_images(skins_image_list, skin_names_list);
 
         // Then process the passive
-        spells_url_list.push_back(QString::fromStdString("https://ddragon.leagueoflegends.com/cdn/" + this->static_data.get_version() + "/img/passive/" + passive["image"].toObject()["full"].toString().toStdString()));
+        QString spell_url("https://ddragon.leagueoflegends.com/cdn/" + QString::fromStdString(this->static_data.get_version()) + "/img/passive/" + passive["image"].toObject()["full"].toString());
+        ability_description_list.push_back(
+            "Passive: " + passive["name"].toString() + "\n\n"
+            "Description: " + passive["description"].toString()
+        );
         QNetworkRequest request{
-            QUrl(spells_url_list[0])
+            QUrl(spell_url)
         };
         this->net_reply = this->net_manager->get(request);
 
@@ -446,20 +456,26 @@ void ApiProcessor::retrieve_data(int index){
 
         // Finally, process the spells
         for(qsizetype i = 0; i < spells.size(); i++){
-            spells_url_list.push_back(QString::fromStdString("https://ddragon.leagueoflegends.com/cdn/" + this->static_data.get_version() + "/img/spell/" + spells[i].toObject()["id"].toString().toStdString() + ".png"));
+            spell_url = QString::fromStdString("https://ddragon.leagueoflegends.com/cdn/" + this->static_data.get_version() + "/img/spell/" + spells[i].toObject()["id"].toString().toStdString() + ".png");
+            ability_description_list.push_back(
+                "Skill name: " + spells[i].toObject()["name"].toString() + "\n\n"
+                "Description: " + spells[i].toObject()["description"].toString() + "\n\n"
+                "Cooldown: " + spells[i].toObject()["cooldownBurn"].toString() + " seconds\n"
+                "Cost: " + spells[i].toObject()["costBurn"].toString() + " " + this->static_data.get_champion_resource_name_by_key(key)
+            );
 
             QNetworkRequest request{
-                QUrl(spells_url_list[i + 1])
+                QUrl(spell_url)
             };
             this->net_reply = this->net_manager->get(request);
 
-            QEventLoop event_loop;
+            QEventLoop event_loop_;
             connect(this->net_reply, &QNetworkReply::readyRead, this, &ApiProcessor::read_data);
             connect(this->net_reply, &QNetworkReply::finished, this, [&spells_image_list, this]{ add_image_from_api(spells_image_list); });
-            connect(this->net_reply, &QNetworkReply::finished, &event_loop, &QEventLoop::quit);
-            event_loop.exec();
+            connect(this->net_reply, &QNetworkReply::finished, &event_loop_, &QEventLoop::quit);
+            event_loop_.exec();
         }
-        this->champion_window.process_champion_abilities_images(spells_image_list);
+        this->champion_window.process_champion_abilities_images(spells_image_list, ability_description_list);
 
     }
 

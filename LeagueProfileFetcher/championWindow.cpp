@@ -1,6 +1,7 @@
 #include "./championWindow.h"
 #include "./ui_champion_description.h"
 
+
 ChampionWindow::ChampionWindow(QWidget* parent, QString champion_name) : QMainWindow(parent), champion_description_ui(new Ui::ChampionWindow){
     this->champion_description_ui->setupUi(this);
     this->setFixedSize(this->width(), this->height());
@@ -118,7 +119,7 @@ void ChampionWindow::delete_champion_abilities_images(){
  * @brief Process the list of skins that the champion has.
  * @param skins - a vector of QImages to add to the skins UI.
  */
-void ChampionWindow::process_champion_skins_images(vector<QImage> skins){
+void ChampionWindow::process_champion_skins_images(vector<QImage> skins, vector<QString> skin_names){
     // Before proceeding, delete the previous layout
     this->delete_champion_skins_images();
 
@@ -130,20 +131,24 @@ void ChampionWindow::process_champion_skins_images(vector<QImage> skins){
         QLabel* skins_label = new QLabel();
         skins_label->setPixmap(QPixmap::fromImage(skins[i]));
         //skins_label->setScaledContents(true);
-        //skins_label->setToolTip()
+        skins_label->setToolTip(skin_names[i]);
         //skins_label->setObjectName()
         layout->addWidget(skins_label);
     }
 
+    // Set layout properties
+    layout->setSpacing(5);
+
     // Finally, set the new layout on the skins area
     this->champion_description_ui->skins_list->setLayout(layout);
+    this->champion_description_ui->skins_list->setWidgetResizable(false);
 }
 
 /**
  * @brief Process the list of spells + passive that the champion has.
  * @param abilities - a vector of QImages to add to the spells UI
  */
-void ChampionWindow::process_champion_abilities_images(vector<QImage> abilities){
+void ChampionWindow::process_champion_abilities_images(vector<QImage> abilities, vector<QString> descriptions){
     // Before proceeding, delete the previous layout
     this->delete_champion_abilities_images();
 
@@ -155,6 +160,8 @@ void ChampionWindow::process_champion_abilities_images(vector<QImage> abilities)
         QLabel* ability_label = new QLabel();
         abilities[i] = abilities[i].scaled(75, 75, Qt::KeepAspectRatio, Qt::FastTransformation);
         ability_label->setPixmap(QPixmap::fromImage(abilities[i]));
+        ability_label->setObjectName(descriptions[i]);
+        ability_label->installEventFilter(this);
         layout->addWidget(ability_label);
     }
 
@@ -179,6 +186,11 @@ bool ChampionWindow::eventFilter(QObject *object, QEvent *event){
         }
     }
 
+    // Mouse click on any of the abilities
+    else if(object->isWidgetType() && object->inherits("QLabel") && event->type() == QEvent::MouseButtonPress){
+        this->champion_description_ui->ability_description->setPlaceholderText(object->objectName());
+        return true;
+    }
 
 
 

@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QScrollBar>
 
 
 QT_BEGIN_NAMESPACE
@@ -43,8 +44,8 @@ public:
     void acknowledged_signal();
     void delete_champion_skins_images();
     void delete_champion_abilities_images();
-    void process_champion_skins_images(vector<QImage>);
-    void process_champion_abilities_images(vector<QImage>);
+    void process_champion_skins_images(vector<QImage>, vector<QString>);
+    void process_champion_abilities_images(vector<QImage>, vector<QString>);
     //void process_champion_data(QJsonArray, QJsonArray, QJsonObject);
 
     // Show the window
