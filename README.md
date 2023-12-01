@@ -11,7 +11,7 @@ This project has omitted 3 files: ApiKey.h, databaseInfo.h, and databaseInfo.cpp
 For ApiKey.h, it stores your Riot Games API and multiple required libraries.  Note that you will need to generate your own Riot Games API key by following this link ([CLICK HERE](https://developer.riotgames.com/)).
 
 Once you have your generated API KEY, please create your own ApiKey.h with the following structure:
-`
+```
 #ifndef APIKEY_H
 #define APIKEY_H
 
@@ -40,5 +40,4 @@ using std::regex_replace;
 using std::vector;
 
 #endif // APIKEY_H
-
-`
+```
