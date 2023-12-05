@@ -74,7 +74,7 @@ void SummonerData::process_summoner_data(QJsonObject json){
 }
 
 void SummonerData::reset_all_rank_data(){
-    for(int i = 0; i < this->summoner_rank_data.size(); i++)
+    for(size_t i = 0; i < this->summoner_rank_data.size(); i++)
         this->summoner_rank_data[i].reset_rank_data();
 }
 
@@ -111,7 +111,7 @@ void SummonerData::process_mastery_data(QJsonArray json, PostgresDatabase* datab
     //doc.setArray(json);
     //cout << "Json mastery data: " << doc.toJson(QJsonDocument::Indented).toStdString() << endl;
 
-    for(int i = 0; i < json.size() && i < 10; i++){
+    for(qsizetype i = 0; i < json.size() && i < 10; i++){
         // Champion id, points, and level are all obtained from json.
         // Same with the associated summoner puuid.
         this->summoner_mastery_data[i].set_champion_id(json[i].toObject()["championId"].toInt());
@@ -132,7 +132,7 @@ void SummonerData::process_mastery_data(QJsonArray json, PostgresDatabase* datab
  * @return Return the solo q rank if found.
  */
 SummonerRank SummonerData::get_solo_queue_data(){
-    for(int i = 0; i < this->summoner_rank_data.size(); i++){
+    for(size_t i = 0; i < this->summoner_rank_data.size(); i++){
         if(this->summoner_rank_data[i].get_queue_type() == "RANKED_SOLO_5x5")
             return this->summoner_rank_data[i];
     }
@@ -144,7 +144,7 @@ SummonerRank SummonerData::get_solo_queue_data(){
  * @return Return the flex q rank if found.
  */
 SummonerRank SummonerData::get_flex_queue_data(){
-    for(int i = 0; i < this->summoner_rank_data.size(); i++){
+    for(size_t i = 0; i < this->summoner_rank_data.size(); i++){
         if(this->summoner_rank_data[i].get_queue_type() == "RANKED_FLEX_SR")
             return this->summoner_rank_data[i];
     }
@@ -157,7 +157,7 @@ SummonerRank SummonerData::get_flex_queue_data(){
  */
 vector<SummonerMastery> SummonerData::get_all_mastery_champions(){
     vector<SummonerMastery> result;
-    for(int i = 0; i < this->summoner_mastery_data.size(); i++){
+    for(size_t i = 0; i < this->summoner_mastery_data.size(); i++){
         if(this->summoner_mastery_data[i].get_summoner_puuid() == this->summoner_puuid)
             result.push_back(this->summoner_mastery_data[i]);
         else

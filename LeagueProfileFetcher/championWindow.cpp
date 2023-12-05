@@ -80,8 +80,18 @@ void ChampionWindow::acknowledged_signal(){
  * @brief Hide this window and then go back to the summoner window.  To go back, emit a signal.
  */
 void ChampionWindow::go_back_to_summoner_window(){
+    // Hide the window and send a signal that the api processor will reference
     this->hide();
     this->is_signaled = true;
+
+    // Reset the read-only text box
+    this->champion_description_ui->ability_description->setText("");
+
+    // And also delete the current abilities and skins layout
+    this->delete_champion_abilities_images();
+    this->delete_champion_skins_images();
+
+    // Finally, emit the signal to the api processor
     Q_EMIT show_summoner_window_signal();
 }
 
@@ -121,9 +131,6 @@ void ChampionWindow::delete_champion_abilities_images(){
  * @param skins - a vector of QImages to add to the skins UI.
  */
 void ChampionWindow::process_champion_skins_images(vector<QImage> skins, vector<QString> skin_names){
-    // Before proceeding, delete the previous layout
-    this->delete_champion_skins_images();
-
     // First, create a layout to add the skins to
     QBoxLayout* layout = new QHBoxLayout();
 
@@ -131,22 +138,20 @@ void ChampionWindow::process_champion_skins_images(vector<QImage> skins, vector<
     for(size_t i = 0; i < skins.size(); i++){
         QLabel* skins_label = new QLabel();
         skins_label->setPixmap(QPixmap::fromImage(skins[i]));
-        //skins_label->setScaledContents(true);
         skins_label->setToolTip(skin_names[i]);
-        //skins_label->setObjectName()
         layout->addWidget(skins_label);
     }
 
     // Set layout properties
     layout->setSpacing(5);
 
-    // Create a new widget
+    // Create a new widget and set the layout.
+    // Doing so will allow the scroll area to contain a horizontal scrollbar.
     QWidget* widget = new QWidget();
     widget->setLayout(layout);
 
-    // Finally, set the new layout on the skins area
+    // Finally, set the new widget on the skins_list
     this->champion_description_ui->skins_list->setWidget(widget);
-    //this->champion_description_ui->skins_list->setWidgetResizable(false);
 }
 
 /**
@@ -154,9 +159,6 @@ void ChampionWindow::process_champion_skins_images(vector<QImage> skins, vector<
  * @param abilities - a vector of QImages to add to the spells UI
  */
 void ChampionWindow::process_champion_abilities_images(vector<QImage> abilities, vector<QString> descriptions){
-    // Before proceeding, delete the previous layout
-    this->delete_champion_abilities_images();
-
     // First, create a layout to add the skins to
     QBoxLayout* layout = new QHBoxLayout();
 
@@ -194,7 +196,6 @@ bool ChampionWindow::eventFilter(QObject *object, QEvent *event){
     // Mouse click on any of the abilities
     else if(object->isWidgetType() && object->inherits("QLabel") && event->type() == QEvent::MouseButtonPress){
         this->champion_description_ui->ability_description->setText(object->objectName());
-        //this->champion_description_ui->ability_description->setHorizontalScrollBar(new QScrollBar());
         return true;
     }
 
