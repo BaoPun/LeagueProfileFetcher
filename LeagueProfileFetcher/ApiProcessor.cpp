@@ -13,6 +13,7 @@ ApiProcessor::ApiProcessor(QObject *parent){
 
     // Set the flag to be false
     this->has_entered_new_summoner = false;
+    this->is_summoner_lookup_successful = false;
 
     // Make a connection to the Postgres SQL database
     this->database = new PostgresDatabase();
@@ -39,8 +40,8 @@ ApiProcessor::~ApiProcessor(){
     }
 
     // Close the database connection, if not already closed
-    if(this->database != nullptr)
-        delete this->database;
+    this->close_database_connection();
+    cout << endl;
 }
 
 /**
@@ -293,12 +294,21 @@ void ApiProcessor::retrieve_data(int index){
             cout << "Main error is that the summoner is currently NOT in a live game" << endl << endl;
         else{
             this->summoner_profile_window.set_summoner_placeholder_label_text("INVALID USER");
+            this->is_summoner_lookup_successful = false;
 
             // Reset all data
             this->summoner_data.reset_all_rank_data();
             this->summoner_profile_window.delete_summoner_emblems();
             this->summoner_profile_window.delete_summoner_mastered_champions_images();
         }
+
+        // Check to see if the error was an expired api key
+        if(this->net_reply->error() == QNetworkReply::ContentAccessDenied){
+            cout << "Error was that the api key is expired." << endl;
+        }
+
+
+
 
         // At the end of the data processing, clear out the data buffer
         this->data_buffer.clear();
@@ -343,6 +353,7 @@ void ApiProcessor::retrieve_data(int index){
         this->static_data.set_item_data(QJsonDocument::fromJson(this->data_buffer).object()["data"].toObject(), this->database);
     // Set up the riot id data (puuid, summoner name, tagline)
     else if(index == 7){
+        this->is_summoner_lookup_successful = true;
         this->summoner_data.process_riot_data(QJsonDocument::fromJson(this->data_buffer).object());
         this->data_buffer.clear();
 
@@ -485,6 +496,18 @@ void ApiProcessor::retrieve_data(int index){
 }
 
 /**
+ * @brief Close the database connection manually.  Mainly used for test class.
+ */
+void ApiProcessor::close_database_connection(){
+    // Close the database connection, if not already closed
+    if(this->database != nullptr){
+        delete this->database;
+        this->database = nullptr;
+        QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnection);
+    }
+}
+
+/**
  * @brief Getter to the network access manager
  * @return the network access manager (QNetworkAccessManager *)
  */
@@ -506,6 +529,15 @@ QNetworkReply *ApiProcessor::get_network_reply(){
  */
 SummonerData ApiProcessor::get_summoner_data(){
     return this->summoner_data;
+}
+
+/**
+ * @brief Getter to determine if looking up a summoner was successful/
+ * Primarily used for test class
+ * @return True or False: lookup was successful
+ */
+bool ApiProcessor::get_summoner_lookup_status(){
+    return this->is_summoner_lookup_successful;
 }
 
 /**

@@ -122,7 +122,7 @@ QString MainWindow::get_region_from_ui(){
  */
 void MainWindow::execute(){
     // Change the title of the window
-    this->setWindowTitle("ICANT KEKW");
+    this->setWindowTitle("LoL Profile Fetcher");
 
     // Set focus to the input
     this->ui->SummonerInput->setFocus();
@@ -150,7 +150,7 @@ void MainWindow::execute(){
     this->ui->PlatformSelector->setCurrentIndex(1); // Index 1 = North America
 
     // Add a click event to the button when the submit button is clicked.
-    QObject::connect(this->ui->SubmitButton, SIGNAL(clicked()), this, SLOT(process_and_clear_form()));
+    connect(this->ui->SubmitButton, SIGNAL(clicked()), this, SLOT(process_and_clear_form()));
 
     // Show the widget
     this->show();

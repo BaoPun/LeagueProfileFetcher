@@ -164,6 +164,9 @@ void SummonerProfile::execute(){
     // Set focus to the input
     this->summoner_ui->summoner_input->setFocus();
 
+    // Change the window title
+
+
     // Add a click event to the button when the submit button is clicked.
     connect(this->summoner_ui->submit_button, SIGNAL(clicked()), this, SLOT(process_and_clear_form()));
 

@@ -37,6 +37,9 @@ class ApiProcessor : public QObject{
         // Store league-related information from the user
         SummonerData summoner_data;
 
+        // Did our api call to get summoner process successfully?
+        bool is_summoner_lookup_successful;
+
 
 
         // Store async'ed data
@@ -82,11 +85,15 @@ class ApiProcessor : public QObject{
         void process_multiple_api_data(vector<QString>, int = 0);
         void process_multiple_image_data();
 
+        // Close database
+        void close_database_connection();
+
 
         // Getters
         QNetworkAccessManager *get_network_access_manager();
         QNetworkReply *get_network_reply();
         SummonerData get_summoner_data();
+        bool get_summoner_lookup_status();
 
         // Setters
         void set_network_access_manager(QNetworkAccessManager *);

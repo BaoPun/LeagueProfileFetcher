@@ -51,6 +51,9 @@ void ChampionWindow::execute(){
         return;
     }
 
+    // Set the title
+    this->setWindowTitle(this->champion_name);
+
     // Set focus on the widget
     this->champion_description_ui->centralwidget->setFocus();
 
